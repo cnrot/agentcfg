@@ -1,0 +1,22 @@
+# config-mgr: 临时文件和缓存排除
+# 已追踪文件不受 gitignore 影响
+
+# 旧备份体系（废弃）
+backups/
+
+# 运行时缓存
+.runtime/
+file-history/
+shell-snapshots/
+
+# 会话缓存
+sessions/
+session-env/
+
+# 插件缓存
+plugins/cache/
+
+# 临时文件
+stats-cache.json
+desktop-server-state.json
+*.bak.*

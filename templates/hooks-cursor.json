@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "__COMMIT_SCRIPT__ --source pre_shell"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "__COMMIT_SCRIPT__ --source post_edit"
+      }
+    ]
+  }
+}
