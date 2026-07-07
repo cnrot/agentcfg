@@ -15,8 +15,10 @@ export function installClaudeHooks(claudeDir, commitScriptPath) {
   const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
   const templatePath = join(TEMPLATE_DIR, 'hooks-claude.json');
   const template = JSON.parse(readFileSync(templatePath, 'utf-8'));
+  // 转义 Windows 路径中的反斜杠，避免 JSON.parse 失败
+  const escapedPath = commitScriptPath.replace(/\\/g, '\\\\');
   const hookConfig = JSON.parse(
-    JSON.stringify(template).replaceAll('__COMMIT_SCRIPT__', commitScriptPath)
+    JSON.stringify(template).replaceAll('__COMMIT_SCRIPT__', escapedPath)
   );
   if (settings.hooks?.PreToolUse?.some(h =>
     h.hooks?.some(hk => hk.command?.includes('commit.js'))
