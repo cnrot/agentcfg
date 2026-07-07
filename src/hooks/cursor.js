@@ -18,7 +18,7 @@ export function installCursorHooks(cursorDir, commitScriptPath) {
   }
   // 备份原文件
   if (existsSync(hooksPath)) {
-    writeFileSync(hooksPath + '.bak', readFileSync(hooksPath, 'utf-8'), 'utf-8');
+    writeFileSync(hooksPath + '.bak.agentcfg', readFileSync(hooksPath, 'utf-8'), 'utf-8');
   }
   const templatePath = join(TEMPLATE_DIR, 'hooks-cursor.json');
   let templateStr = readFileSync(templatePath, 'utf-8');
@@ -49,7 +49,7 @@ export function uninstallCursorHooks(cursorDir) {
     return { uninstalled: false, message: 'hooks.json 不存在' };
   }
   const content = readFileSync(hooksPath, 'utf-8');
-  writeFileSync(hooksPath + '.bak', content, 'utf-8');
+  writeFileSync(hooksPath + '.bak.agentcfg', content, 'utf-8');
   const hooks = JSON.parse(content);
   if (hooks.hooks?.beforeShellExecution) {
     hooks.hooks.beforeShellExecution = hooks.hooks.beforeShellExecution.filter(

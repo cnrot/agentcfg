@@ -1,6 +1,6 @@
 import { homedir } from 'os';
 import { join } from 'path';
-import { existsSync } from 'fs';
+import { existsSync, rmSync } from 'fs';
 import { uninstallClaudeHooks } from './hooks/claude.js';
 import { uninstallCursorHooks } from './hooks/cursor.js';
 import { uninstallCodexHooks } from './hooks/codex.js';
@@ -20,6 +20,12 @@ export default async function uninstall() {
     if (existsSync(agent.dir)) {
       const result = await agent.fn(agent.dir);
       console.log(`  ${agent.name}: ${result.message}`);
+    }
+    // 移除 SKILL.md
+    const skillPath = join(agent.dir, 'skills/agentcfg/SKILL.md');
+    if (existsSync(skillPath)) {
+      rmSync(skillPath);
+      console.log(`  ${agent.name}: SKILL.md 已移除`);
     }
   }
 

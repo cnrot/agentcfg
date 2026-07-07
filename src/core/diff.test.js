@@ -52,10 +52,11 @@ runTest('有差异时报告包含新增和移除行', (tmpDir) => {
   mkdirSync(repoDir, { recursive: true });
   initRepo(repoDir);
 
-  addCommit(repoDir, 'file.txt', 'line1\nline2');
-  const hash = addCommit(repoDir, 'file.txt', 'line1\nline3');
+  const hashOld = addCommit(repoDir, 'file.txt', 'line1\nline2');
+  // 工作树当前为 line1\nline3，与 hashOld 比较应显示 line3 新增、line2 移除
+  addCommit(repoDir, 'file.txt', 'line1\nline3');
 
-  const report = generateDiffReport({ cwd: repoDir, hash, filePath: 'file.txt' });
+  const report = generateDiffReport({ cwd: repoDir, hash: hashOld, filePath: 'file.txt' });
 
   assert(report.includes('恢复比对报告'), '报告包含标题');
   assert(report.includes('file.txt'), '报告包含文件路径');

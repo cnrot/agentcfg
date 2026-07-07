@@ -27,7 +27,7 @@ export function generateDiffReport({ cwd, hash, filePath }) {
 
   let added = '', removed = '';
   try {
-    const diffOutput = execFileSync('git', ['diff', `${hash}^..${hash}`, '--', filePath], {
+    const diffOutput = execFileSync('git', ['diff', hash, '--', filePath], {
       cwd, encoding: 'utf-8',
     });
     const lines = diffOutput.split('\n');

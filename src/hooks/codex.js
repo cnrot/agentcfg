@@ -25,11 +25,15 @@ export function installCodexHooks(codexDir, commitScriptPath) {
   const filled = template.replaceAll('__COMMIT_SCRIPT__', escapedPath);
   // 备份 hooks.json（如果已存在）
   if (existsSync(hooksPath)) {
-    writeFileSync(hooksPath + '.bak', readFileSync(hooksPath, 'utf-8'), 'utf-8');
+    writeFileSync(hooksPath + '.bak.agentcfg', readFileSync(hooksPath, 'utf-8'), 'utf-8');
   }
   writeFileSync(hooksPath, filled, 'utf-8');
 
   const configPath = join(codexDir, 'config.toml');
+  // 备份原 config.toml
+  if (existsSync(configPath)) {
+    writeFileSync(configPath + '.bak.agentcfg', readFileSync(configPath, 'utf-8'), 'utf-8');
+  }
   if (existsSync(configPath)) {
     const config = readFileSync(configPath, 'utf-8');
     if (!config.includes('[features]')) {
@@ -48,7 +52,7 @@ export function uninstallCodexHooks(codexDir) {
   const hooksPath = join(codexDir, 'hooks.json');
   if (existsSync(hooksPath)) {
     const content = readFileSync(hooksPath, 'utf-8');
-    writeFileSync(hooksPath + '.bak', content, 'utf-8');
+    writeFileSync(hooksPath + '.bak.agentcfg', readFileSync(hooksPath, 'utf-8'), 'utf-8');
     const hooks = JSON.parse(content);
     if (hooks.hooks?.PreToolUse) {
       hooks.hooks.PreToolUse = hooks.hooks.PreToolUse.filter(e =>

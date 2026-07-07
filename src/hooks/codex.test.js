@@ -72,7 +72,7 @@ runTest('uninstall removes hooks entries and disables feature', (tmpDir) => {
   assert(result.message === 'agentcfg hooks 已移除', '消息应提示已移除');
 
   // 验证备份文件存在
-  assert(existsSync(join(tmpDir, 'hooks.json.bak')), '备份文件 hooks.json.bak 应存在');
+  assert(existsSync(join(tmpDir, 'hooks.json.bak.agentcfg')), '备份文件 hooks.json.bak.agentcfg 应存在');
 
   // 验证 hooks.json 中的 commit.js 条目已被移除
   const raw = readFileSync(join(tmpDir, 'hooks.json'), 'utf-8');

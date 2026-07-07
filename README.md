@@ -69,5 +69,5 @@ npx agentcfg uninstall
 
 如需删除 .git 仓库，手动执行：
 ```bash
-rm -rf ~/.claude/.git
+trash ~/.claude/.git
 ```
