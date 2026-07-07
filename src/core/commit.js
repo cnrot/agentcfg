@@ -34,8 +34,8 @@ export function commit({ cwd, source = 'hook', toolName = 'unknown' }) {
     const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
     const message = `auto: snapshot before ${toolName} at ${timestamp}`;
     execFileSync('git', [
-      '-c', 'user.name=config-mgr',
-      '-c', 'user.email=config-mgr@local',
+      '-c', 'user.name=agentcfg',
+      '-c', 'user.email=agentcfg@local',
       'commit', '--no-verify', '--no-gpg-sign', '-m', message,
     ], {
       cwd,

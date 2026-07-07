@@ -34,7 +34,7 @@ function runTest(name, fn) {
 runTest('install succeeds and creates hooks.json + config.toml', (tmpDir) => {
   const result = installCodexHooks(tmpDir, '/usr/bin/commit.js');
   assert(result.installed === true, 'installed 应为 true');
-  assert(result.message === 'Codex CLI hooks 注册成功（含 feature flag 开启）', '消息应提示注册成功');
+  assert(result.message === 'agentcfg hooks 注册成功（含 feature flag 开启）', '消息应提示注册成功');
 
   // 验证 hooks.json 存在且包含正确内容
   const hooksPath = join(tmpDir, 'hooks.json');
@@ -61,7 +61,7 @@ runTest('re-install is idempotent (skips)', (tmpDir) => {
   installCodexHooks(tmpDir, '/usr/bin/commit.js');
   const result = installCodexHooks(tmpDir, '/usr/bin/commit.js');
   assert(result.installed === false, 'installed 应为 false');
-  assert(result.message === 'Codex hooks 已注册，跳过', '消息应提示已注册跳过');
+  assert(result.message === 'agentcfg hooks 已注册，跳过', '消息应提示已注册跳过');
 });
 
 // Test 3: 卸载成功 - 移除 hooks 条目并关闭 feature flag
@@ -69,7 +69,7 @@ runTest('uninstall removes hooks entries and disables feature', (tmpDir) => {
   installCodexHooks(tmpDir, '/usr/bin/commit.js');
   const result = uninstallCodexHooks(tmpDir);
   assert(result.uninstalled === true, 'uninstalled 应为 true');
-  assert(result.message === 'Codex CLI hooks 已移除', '消息应提示已移除');
+  assert(result.message === 'agentcfg hooks 已移除', '消息应提示已移除');
 
   // 验证备份文件存在
   assert(existsSync(join(tmpDir, 'hooks.json.bak')), '备份文件 hooks.json.bak 应存在');

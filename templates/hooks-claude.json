@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": "__COMMIT_SCRIPT__ --source pre_tool",
-            "statusMessage": "config-mgr: 检测配置文件变更"
+            "statusMessage": "agentcfg: 检测配置文件变更"
           }
         ]
       }

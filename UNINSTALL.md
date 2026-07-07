@@ -1,9 +1,9 @@
-# 卸载 config-mgr
+# 卸载 agentcfg
 
 ## 自动卸载
 
 ```bash
-npx @config-mgr/cli uninstall
+npx agentcfg uninstall
 ```
 
 自动完成：
@@ -28,7 +28,7 @@ npx @config-mgr/cli uninstall
 编辑 `~/.codex/config.toml` 将 `hooks = true` 改为 `hooks = false`。
 
 ### OpenCode
-删除 `.opencode/plugins/config-mgr.ts`。
+删除 `.opencode/plugins/agentcfg.ts`。
 
 ### Git 仓库
 ```bash
@@ -40,5 +40,5 @@ rm -rf ~/.codex/.git
 ## 备份恢复
 
 如果卸载后反悔了：
-- settings.json 备份位于 `~/.claude/settings.json.bak.config-mgr`
-- .git 仓库不主动删除，可以重新 `npx @config-mgr/cli init`
+- settings.json 备份位于 `~/.claude/settings.json.bak.agentcfg`
+- .git 仓库不主动删除，可以重新 `npx agentcfg init`

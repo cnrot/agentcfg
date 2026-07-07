@@ -13,7 +13,7 @@ export function installCursorHooks(cursorDir, commitScriptPath) {
     if (existingHooks.hooks?.beforeShellExecution?.some(
       h => h.command?.includes('commit.js')
     )) {
-      return { installed: false, message: 'Cursor hooks 已注册，跳过' };
+      return { installed: false, message: 'agentcfg hooks 已注册，跳过' };
     }
   }
   // 备份原文件
@@ -25,7 +25,7 @@ export function installCursorHooks(cursorDir, commitScriptPath) {
   const escapedPath = commitScriptPath.replace(/\\/g, '\\\\');
   templateStr = templateStr.replaceAll('__COMMIT_SCRIPT__', escapedPath);
   const newHooks = JSON.parse(templateStr);
-  // 合并：保留用户已有 hooks，追加 config-mgr 条目
+  // 合并：保留用户已有 hooks，追加 agentcfg 条目
   const merged = {
     version: 1,
     hooks: {
@@ -40,7 +40,7 @@ export function installCursorHooks(cursorDir, commitScriptPath) {
     },
   };
   writeFileSync(hooksPath, JSON.stringify(merged, null, 2) + '\n', 'utf-8');
-  return { installed: true, message: 'Cursor hooks 注册成功' };
+  return { installed: true, message: 'agentcfg hooks 注册成功' };
 }
 
 export function uninstallCursorHooks(cursorDir) {
@@ -62,5 +62,5 @@ export function uninstallCursorHooks(cursorDir) {
     );
   }
   writeFileSync(hooksPath, JSON.stringify(hooks, null, 2) + '\n', 'utf-8');
-  return { uninstalled: true, message: 'Cursor hooks 已移除' };
+  return { uninstalled: true, message: 'agentcfg hooks 已移除' };
 }

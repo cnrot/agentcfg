@@ -1,8 +1,8 @@
-# config-mgr：AI 工具配置文件版本控制
+# agentcfg：AI 工具配置文件版本控制
 
 ## 0. 这是什么
 
-config-mgr 是一个基于 Git 的版本控制系统，专门管理你的 AI 工具配置文件。
+agentcfg 是一个基于 Git 的版本控制系统，专门管理你的 AI 工具配置文件。
 
 **它能做什么：**
 - 每次修改配置文件前自动备份（通过 hooks）
@@ -42,7 +42,7 @@ cd .claude && git log --oneline
 
 **如果以上任意特征缺失，请告知用户先执行：**
 ```bash
-npx @config-mgr/cli init
+npx agentcfg init
 ```
 
 ---
@@ -220,14 +220,14 @@ du -sh ~/.claude/.git
 
 ### 5.1 git 命令报 "fatal: not a git repository"
 
-**原因：** config-mgr 未初始化或 .git 目录被误删。
+**原因：** agentcfg 未初始化或 .git 目录被误删。
 
 **解决：**
 ```bash
 # 执行安装命令
-npx @config-mgr/cli init
+npx agentcfg init
 ```
-然后告知用户："config-mgr 已重新初始化，首次 commit 已创建。"
+然后告知用户："agentcfg 已重新初始化，首次 commit 已创建。"
 
 ### 5.2 git log 什么都看不到
 
@@ -267,7 +267,7 @@ cat ~/.codex/config.toml | grep hooks
 
 2. 如果配置缺失：
 ```bash
-npx @config-mgr/cli init
+npx agentcfg init
 ```
 
 3. 如果配置存在但不触发，检查 commit.js 路径是否正确：
@@ -284,7 +284,7 @@ ls -la /path/to/commit.js
 
 **告知用户：**
 ```
-config-mgr 会自动压缩 90 天前的 commit 以保持历史整洁。
+agentcfg 会自动压缩 90 天前的 commit 以保持历史整洁。
 原始内容没有丢失，只是多个 commit 合并成了一个 archive commit。
 
 如需长期保留某个版本，请告知用户：
@@ -298,6 +298,6 @@ config-mgr 会自动压缩 90 天前的 commit 以保持历史整洁。
 
 - **不要手动删除 .git 目录**，否则丢失所有历史
 - **不要手动 git checkout 覆盖文件**，走三步恢复法
-- **如果修改了 settings.json 导致 hooks 不生效**，重新执行 `npx @config-mgr/cli init`
+- **如果修改了 settings.json 导致 hooks 不生效**，重新执行 `npx agentcfg init`
 - **如需长期保留关键版本**，告知 LLM 对某个 commit 打 tag
 - 系统每季度自动压缩 90 天前的 commit，不会丢失内容

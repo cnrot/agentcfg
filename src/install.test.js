@@ -60,7 +60,7 @@ if (agents.length === 0) {
     console.log(`  [warn] 安装过程出错: ${installError.message}`);
     console.log('  [warn] 错误来自子组件，install 入口检测逻辑已验证');
   } else {
-    assert(output.includes('config-mgr 安装完成'),
+    assert(output.includes('agentcfg 安装完成'),
       '有 agent 时输出安装完成提示');
   }
 }

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_DIR = join(__dirname, '../../templates');
 
-const FEATURE_FLAG_TOML = `# config-mgr: 启用 hooks 支持（由 config-mgr 自动添加）
+const FEATURE_FLAG_TOML = `# agentcfg: 启用 hooks 支持（由 agentcfg 自动添加）
 [features]
 hooks = true
 `;
@@ -17,7 +17,7 @@ export function installCodexHooks(codexDir, commitScriptPath) {
     if (existing.hooks?.PreToolUse?.some(e =>
       e.hooks?.some(h => h.command?.includes('commit.js'))
     )) {
-      return { installed: false, message: 'Codex hooks 已注册，跳过' };
+      return { installed: false, message: 'agentcfg hooks 已注册，跳过' };
     }
   }
   const template = readFileSync(join(TEMPLATE_DIR, 'hooks-codex.json'), 'utf-8');
@@ -41,7 +41,7 @@ export function installCodexHooks(codexDir, commitScriptPath) {
   } else {
     writeFileSync(configPath, FEATURE_FLAG_TOML, 'utf-8');
   }
-  return { installed: true, message: 'Codex CLI hooks 注册成功（含 feature flag 开启）' };
+  return { installed: true, message: 'agentcfg hooks 注册成功（含 feature flag 开启）' };
 }
 
 export function uninstallCodexHooks(codexDir) {
@@ -63,5 +63,5 @@ export function uninstallCodexHooks(codexDir) {
     config = config.replace('hooks = true', 'hooks = false');
     writeFileSync(configPath, config, 'utf-8');
   }
-  return { uninstalled: true, message: 'Codex CLI hooks 已移除' };
+  return { uninstalled: true, message: 'agentcfg hooks 已移除' };
 }

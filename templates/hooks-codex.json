@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": "__COMMIT_SCRIPT__ --source pre_tool",
-            "statusMessage": "config-mgr: snapshotting"
+            "statusMessage": "agentcfg: snapshotting"
           }
         ]
       }

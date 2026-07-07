@@ -35,9 +35,10 @@ runTest('install succeeds and creates plugin file', (tmpDir) => {
   const opencodeDir = join(tmpDir, '.opencode');
   const result = installOpencodeHooks(opencodeDir);
   assert(result.installed === true, 'installed 应为 true');
-  assert(result.message === 'OpenCode 插件安装成功', '消息应提示安装成功');
+  assert(result.message === 'agentcfg 插件安装成功', '消息应提示安装成功');
 
-  const targetPath = join(opencodeDir, 'plugins/config-mgr.ts');
+  const targetPath = join(opencodeDir, 'plugins/agentcfg.ts');
+  assert(existsSync(targetPath), '插件文件应已创建');
   assert(existsSync(targetPath), '插件文件应已创建');
 
   const content = readFileSync(targetPath, 'utf-8');
@@ -50,7 +51,7 @@ runTest('re-install is idempotent (skips)', (tmpDir) => {
   installOpencodeHooks(opencodeDir);
   const result = installOpencodeHooks(opencodeDir);
   assert(result.installed === false, 'installed 应为 false');
-  assert(result.message === 'OpenCode 插件已存在，跳过', '消息应提示跳过');
+  assert(result.message === 'agentcfg 插件已存在，跳过', '消息应提示跳过');
 });
 
 // Test 3: 卸载成功 - 移除插件文件并创建备份
@@ -59,11 +60,11 @@ runTest('uninstall removes plugin file and creates backup', (tmpDir) => {
   installOpencodeHooks(opencodeDir);
   const result = uninstallOpencodeHooks(opencodeDir);
   assert(result.uninstalled === true, 'uninstalled 应为 true');
-  assert(result.message === 'OpenCode 插件已移除', '消息应提示已移除');
+  assert(result.message === 'agentcfg 插件已移除', '消息应提示已移除');
 
-  const targetPath = join(opencodeDir, 'plugins/config-mgr.ts');
+  const targetPath = join(opencodeDir, 'plugins/agentcfg.ts');
   assert(!existsSync(targetPath), '插件文件应已删除');
-  assert(existsSync(targetPath + '.bak'), '备份文件应存在');
+  assert(existsSync(targetPath + '.bak.agentcfg'), '备份文件应存在');
 });
 
 // Test 4: 插件不存在时卸载 - 优雅处理
@@ -71,7 +72,7 @@ runTest('uninstall handles missing plugin gracefully', (tmpDir) => {
   const opencodeDir = join(tmpDir, '.opencode');
   const result = uninstallOpencodeHooks(opencodeDir);
   assert(result.uninstalled === false, 'uninstalled 应为 false');
-  assert(result.message === 'OpenCode 插件不存在', '消息应提示插件不存在');
+  assert(result.message === 'agentcfg 插件不存在', '消息应提示插件不存在');
 });
 
 console.log(`\nResult: ${passed} passed, ${failed} failed`);

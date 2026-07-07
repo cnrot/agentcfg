@@ -1,4 +1,4 @@
-# config-mgr
+# agentcfg
 
 > 基于 Git 的 AI 工具配置文件版本控制系统
 
@@ -28,7 +28,7 @@
 ## 安装
 
 ```bash
-npx @config-mgr/cli init
+npx agentcfg init
 ```
 
 安装脚本会自动：
@@ -40,7 +40,7 @@ npx @config-mgr/cli init
 
 ## 恢复
 
-config-mgr 不是通过 CLI 恢复，而是**通过 AI agent 对话恢复**。
+agentcfg 不是通过 CLI 恢复，而是**通过 AI agent 对话恢复**。
 安装到各环境的 SKILL.md 会教会 LLM 如何操作。
 
 用户只需说：
@@ -51,8 +51,8 @@ config-mgr 不是通过 CLI 恢复，而是**通过 AI agent 对话恢复**。
 ## 项目结构
 
 ```
-config-mgr/
-├── bin/config-mgr.js     CLI 入口
+agentcfg/
+├── bin/agentcfg.js       CLI 入口
 ├── src/core/             git 操作核心
 ├── src/hooks/            各 agent 适配器
 ├── templates/            配置模板
@@ -64,7 +64,7 @@ config-mgr/
 ## 卸载
 
 ```bash
-npx @config-mgr/cli uninstall
+npx agentcfg uninstall
 ```
 
 如需删除 .git 仓库，手动执行：

@@ -11,7 +11,7 @@ import { detectAgents } from './install.js';
 export default async function recover(targetFile) {
   const agents = detectAgents();
   if (agents.length === 0) {
-    console.log('❌ 未检测到支持的 AI 工具，请先执行 config-mgr init');
+    console.log('❌ 未检测到支持的 AI 工具，请先执行 agentcfg init');
     return;
   }
   // 默认使用第一个检测到的 agent 目录
@@ -19,7 +19,7 @@ export default async function recover(targetFile) {
 
   if (!existsSync(join(gitDir, '.git'))) {
     console.log(`❌ ${gitDir} 目录未初始化 git 仓库`);
-    console.log('   请先执行 config-mgr init');
+    console.log('   请先执行 agentcfg init');
     return;
   }
 
@@ -39,11 +39,11 @@ export default async function recover(targetFile) {
 
     console.log(`\n💡 如需查看某个版本的差异，请告知 LLM：`);
     console.log(`   "帮我看下第 N 个版本改了什么"`);
-    console.log(`   "用 config-mgr 比对后选择性恢复"`);
+    console.log(`   "用 agentcfg 比对后选择性恢复"`);
 
   } else {
     // 无参数时显示通用指引
-    console.log('📖 config-mgr 恢复指引\n');
+    console.log('📖 agentcfg 恢复指引\n');
 
     const log = getLog({ cwd: gitDir, count: 15 });
     if (log.length > 0) {

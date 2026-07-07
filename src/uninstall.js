@@ -8,7 +8,7 @@ import { uninstallOpencodeHooks } from './hooks/opencode.js';
 
 export default async function uninstall() {
   const home = homedir();
-  console.log('Uninstalling config-mgr...\n');
+  console.log('Uninstalling agentcfg...\n');
 
   const agents = [
     { name: 'Claude Code', dir: join(home, '.claude'), fn: uninstallClaudeHooks },

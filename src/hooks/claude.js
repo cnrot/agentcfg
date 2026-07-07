@@ -15,9 +15,9 @@ export function installClaudeHooks(claudeDir, commitScriptPath) {
   if (settings.hooks?.PreToolUse?.some(h =>
     h.hooks?.some(hk => hk.command?.includes('commit.js'))
   )) {
-    return { installed: false, message: 'Claude Code hooks 已注册，跳过' };
+    return { installed: false, message: 'agentcfg hooks 已注册，跳过' };
   }
-  const backupPath = settingsPath + '.bak.config-mgr';
+  const backupPath = settingsPath + '.bak.agentcfg';
   copyFileSync(settingsPath, backupPath);
   const templatePath = join(TEMPLATE_DIR, 'hooks-claude.json');
   const template = JSON.parse(readFileSync(templatePath, 'utf-8'));
@@ -32,7 +32,7 @@ export function installClaudeHooks(claudeDir, commitScriptPath) {
     ...hookConfig.hooks.PreToolUse,
   ];
   writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
-  return { installed: true, message: 'Claude Code hooks 注册成功' };
+  return { installed: true, message: 'agentcfg hooks 注册成功' };
 }
 
 export function uninstallClaudeHooks(claudeDir) {
@@ -40,7 +40,7 @@ export function uninstallClaudeHooks(claudeDir) {
   if (!existsSync(settingsPath)) {
     return { uninstalled: false, message: 'settings.json 不存在' };
   }
-  const backupPath = settingsPath + '.bak.config-mgr';
+  const backupPath = settingsPath + '.bak.agentcfg';
   if (existsSync(backupPath)) {
     copyFileSync(backupPath, settingsPath);
     return { uninstalled: true, message: '已从备份恢复 settings.json' };
@@ -54,5 +54,5 @@ export function uninstallClaudeHooks(claudeDir) {
     if (Object.keys(settings.hooks).length === 0) delete settings.hooks;
     writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
   }
-  return { uninstalled: true, message: 'Claude Code hooks 已移除' };
+  return { uninstalled: true, message: 'agentcfg hooks 已移除' };
 }

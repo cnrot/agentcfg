@@ -96,7 +96,7 @@ export default async function install() {
     }
 
     // Step 3: 安装 SKILL.md
-    const skillDir = join(agent.dir, 'skills/config-mgr');
+    const skillDir = join(agent.dir, 'skills/agentcfg');
     const skillPath = join(skillDir, 'SKILL.md');
     if (!existsSync(skillPath)) {
       mkdirSync(skillDir, { recursive: true });
@@ -110,6 +110,6 @@ export default async function install() {
     }
   }
 
-  console.log('\n✅ config-mgr 安装完成！');
+  console.log('\n✅ agentcfg 安装完成！');
   console.log('   SKILL.md 已安装到各技能目录，AI agent 将自动获取操作指引。');
 }

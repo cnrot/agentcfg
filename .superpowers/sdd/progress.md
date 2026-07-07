@@ -18,3 +18,4 @@ Task 14: complete (commits 4a27135..5dc3933, review clean)
 
 Task 15: complete (docs SKILL.md)
 Task 16: complete (docs README.md + UNINSTALL.md)
+Review fixes: complete (commits 447224f..0ac0719, all issues fixed)

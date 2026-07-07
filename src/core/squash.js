@@ -47,8 +47,8 @@ export function squashOldHistory({ cwd, daysThreshold = 90 }) {
     }
 
     execFileSync('git', [
-      '-c', 'user.name=config-mgr',
-      '-c', 'user.email=config-mgr@local',
+      '-c', 'user.name=agentcfg',
+      '-c', 'user.email=agentcfg@local',
       'commit', '--no-verify', '--no-gpg-sign', '-m',
       `archive: 自动压缩于 ${cutoffStr}（合并 ${oldCommits.length} 个 commit）`],
     { cwd, encoding: 'utf-8', env: { ...process.env, GIT_COMMITTER_DATE: new Date().toISOString() } });

@@ -44,7 +44,7 @@ runTest('install succeeds with valid settings.json', (tmpDir) => {
   createSettings(tmpDir, { hooks: {} });
   const result = installClaudeHooks(tmpDir, '/usr/bin/commit.js');
   assert(result.installed === true, 'installed 应为 true');
-  assert(result.message === 'Claude Code hooks 注册成功', '消息应提示注册成功');
+  assert(result.message === 'agentcfg hooks 注册成功', '消息应提示注册成功');
 
   // 验证 settings.json 包含 hooks
   const raw = readFileSync(join(tmpDir, 'settings.json'), 'utf-8');
@@ -53,7 +53,7 @@ runTest('install succeeds with valid settings.json', (tmpDir) => {
   assert(settings.hooks.PreToolUse.length > 0, 'PreToolUse 应包含条目');
 
   // 验证备份文件存在
-  assert(existsSync(join(tmpDir, 'settings.json.bak.config-mgr')), '备份文件应存在');
+  assert(existsSync(join(tmpDir, 'settings.json.bak.agentcfg')), '备份文件应存在');
 });
 
 // Test 2: 重复安装幂等 - 第二次应跳过
@@ -62,7 +62,7 @@ runTest('re-install is idempotent (skips)', (tmpDir) => {
   installClaudeHooks(tmpDir, '/usr/bin/commit.js');
   const result = installClaudeHooks(tmpDir, '/usr/bin/commit.js');
   assert(result.installed === false, 'installed 应为 false');
-  assert(result.message === 'Claude Code hooks 已注册，跳过', '消息应提示已注册跳过');
+  assert(result.message === 'agentcfg hooks 已注册，跳过', '消息应提示已注册跳过');
 });
 
 // Test 3: 卸载成功 - 从备份恢复
@@ -90,7 +90,7 @@ runTest('uninstall removes hooks without backup', (tmpDir) => {
             {
               type: 'command',
               command: '/usr/bin/commit.js --source pre_tool',
-              statusMessage: 'config-mgr: 检测配置文件变更',
+              statusMessage: 'agentcfg: 检测配置文件变更',
             },
           ],
         },
@@ -100,7 +100,7 @@ runTest('uninstall removes hooks without backup', (tmpDir) => {
   writeFileSync(join(tmpDir, 'settings.json'), JSON.stringify(settings, null, 2) + '\n', 'utf-8');
   const result = uninstallClaudeHooks(tmpDir);
   assert(result.uninstalled === true, 'uninstalled 应为 true');
-  assert(result.message === 'Claude Code hooks 已移除', '消息应提示已移除');
+  assert(result.message === 'agentcfg hooks 已移除', '消息应提示已移除');
 
   const raw = readFileSync(join(tmpDir, 'settings.json'), 'utf-8');
   const parsed = JSON.parse(raw);

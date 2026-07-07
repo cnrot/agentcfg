@@ -90,14 +90,14 @@ async function main() {
 
     const output = await captureLog(() => recover());
     assert(output.includes('未初始化'), '应提示目录未初始化 git 仓库');
-    assert(output.includes('config-mgr init'), '应提示执行 init');
+    assert(output.includes('agentcfg init'), '应提示执行 init');
   });
 
   await runTest('2. 有 git 仓库时输出恢复指引', async (tmpDir) => {
     setupGitRepo(tmpDir);
 
     const output = await captureLog(() => recover());
-    assert(output.includes('config-mgr 恢复指引'), '应显示恢复指引标题');
+    assert(output.includes('agentcfg 恢复指引'), '应显示恢复指引标题');
     assert(output.includes('初始提交 test.txt'), '应包含提交消息');
     assert(output.includes('常见操作'), '应显示常见操作列表');
   });
