@@ -2,7 +2,7 @@ import { execFileSync } from 'child_process';
 
 export function getLog({ cwd, filePath, since, count = 10 }) {
   const args = ['log', `--max-count=${count}`, '--format=%H|%ci|%s'];
-  if (since) args.push(`--since="${since}"`);
+  if (since) args.push('--since', since);
   if (filePath) args.push('--', filePath);
 
   try {

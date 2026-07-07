@@ -24,6 +24,12 @@ export function commit({ cwd, source = 'hook', toolName = 'unknown' }) {
     if (!status) {
       return { committed: false, message: '无未提交变更，跳过' };
     }
+    // 过滤：如果所有变更只涉及 gitignore 排除的文件，跳过
+    // status --porcelain 对 gitignore 排除的文件不会输出，
+    // 但可能有已追踪文件被修改 + 未追踪文件混合的情况。
+    // 检查是否有已追踪文件的变更（status 非空说明有）
+    // 实际 git 不会报告已 gitignore 排除的已追踪文件变更，
+    // 所以 status 非空就直接提交即可
     execFileSync('git', ['add', '.'], { cwd, encoding: 'utf-8' });
     const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
     const message = `auto: snapshot before ${toolName} at ${timestamp}`;

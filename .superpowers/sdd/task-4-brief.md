@@ -1,3 +1,17 @@
+# Task 4: Core init.js —— 仓库初始化
+
+项目目录: C:\Users\admin\config-mgr
+
+## 文件
+- Create: `C:\Users\admin\config-mgr\src\core\init.js`
+- Create: `C:\Users\admin\config-mgr\src\core\init.test.js`
+
+## 接口
+- `initGit(cwd)` → `{ initialized: boolean, skipped: boolean, message: string }`
+
+## 完整代码
+
+```javascript
 import { execFileSync } from 'child_process';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
@@ -18,11 +32,7 @@ export function initGit(cwd) {
       writeFileSync(join(cwd, '.gitignore'), content, 'utf-8');
     }
     execFileSync('git', ['add', '.'], { cwd });
-    // 设置本地 git user 配置，避免无全局配置时 commit 失败
-    execFileSync('git', ['commit',
-      '-c', 'user.name=config-mgr',
-      '-c', 'user.email=config-mgr@local',
-      '--no-verify', '--no-gpg-sign', '-m', 'init: 初始配置快照'], {
+    execFileSync('git', ['commit', '--no-verify', '--no-gpg-sign', '-m', 'init: 初始配置快照'], {
       cwd,
       env: { ...process.env, GIT_COMMITTER_DATE: new Date().toISOString() },
     });
@@ -31,3 +41,13 @@ export function initGit(cwd) {
     return { initialized: false, skipped: false, message: `初始化失败: ${err.message}` };
   }
 }
+```
+
+## 步骤
+1. 创建 src/core/init.js
+2. 编写测试（创建临时目录、调用 initGit、验证 .git 和 .gitignore 存在、验证幂等）
+3. 验证测试通过
+4. 提交
+
+## 报告
+C:\Users\admin\config-mgr\.superpowers\sdd\task-4-report.md

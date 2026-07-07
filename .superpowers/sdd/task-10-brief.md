@@ -1,3 +1,14 @@
+# Task 10: Codex CLI hook 适配器
+
+项目目录: C:\Users\admin\config-mgr
+
+## 文件
+- Create: `src/hooks/codex.js`
+- Create: `src/hooks/codex.test.js`
+
+## 完整代码（src/hooks/codex.js）
+
+```javascript
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -21,12 +32,7 @@ export function installCodexHooks(codexDir, commitScriptPath) {
     }
   }
   const template = readFileSync(join(TEMPLATE_DIR, 'hooks-codex.json'), 'utf-8');
-  const escapedPath = commitScriptPath.replace(/\\/g, '\\\\');
-  const filled = template.replaceAll('__COMMIT_SCRIPT__', escapedPath);
-  // 备份 hooks.json（如果已存在）
-  if (existsSync(hooksPath)) {
-    writeFileSync(hooksPath + '.bak', readFileSync(hooksPath, 'utf-8'), 'utf-8');
-  }
+  const filled = template.replaceAll('__COMMIT_SCRIPT__', commitScriptPath);
   writeFileSync(hooksPath, filled, 'utf-8');
 
   const configPath = join(codexDir, 'config.toml');
@@ -65,3 +71,10 @@ export function uninstallCodexHooks(codexDir) {
   }
   return { uninstalled: true, message: 'Codex CLI hooks 已移除' };
 }
+```
+
+## 步骤
+1. 创建 src/hooks/codex.js（逐字符复制）
+2. 创建测试（安装、幂等、卸载、config.toml 无 [features] 段时追加）
+3. 运行测试全部通过
+4. 提交 + 报告

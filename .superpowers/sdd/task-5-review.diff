@@ -1,0 +1,168 @@
+diff --git a/src/core/log.js b/src/core/log.js
+new file mode 100644
+index 0000000..a280157
+--- /dev/null
++++ b/src/core/log.js
+@@ -0,0 +1,18 @@
++import { execFileSync } from 'child_process';
++
++export function getLog({ cwd, filePath, since, count = 10 }) {
++  const args = ['log', `--max-count=${count}`, '--format=%H|%ci|%s'];
++  if (since) args.push(`--since="${since}"`);
++  if (filePath) args.push('--', filePath);
++
++  try {
++    const output = execFileSync('git', args, { cwd, encoding: 'utf-8' }).trim();
++    if (!output) return [];
++    return output.split('\n').map(line => {
++      const [hash, date, ...msgParts] = line.split('|');
++      return { hash: hash.slice(0, 8), date: date.replace(/ [+-]\d{4}$/, ''), message: msgParts.join('|') };
++    });
++  } catch (err) {
++    return [];
++  }
++}
+diff --git a/src/core/log.test.js b/src/core/log.test.js
+new file mode 100644
+index 0000000..5490b5f
+--- /dev/null
++++ b/src/core/log.test.js
+@@ -0,0 +1,138 @@
++/**
++ * log.js 测试
++ * 用临时仓库验证 getLog 的各种场景
++ */
++import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'fs';
++import { join } from 'path';
++import { tmpdir } from 'os';
++import { execFileSync } from 'child_process';
++import { getLog } from './log.js';
++
++let passed = 0;
++let failed = 0;
++
++function assert(condition, label) {
++  if (condition) {
++    passed++;
++    console.log(`  ✅ ${label}`);
++  } else {
++    failed++;
++    console.log(`  ❌ ${label}`);
++  }
++}
++
++function runTest(name, fn) {
++  console.log(`\n测试: ${name}`);
++  const tmpDir = mkdtempSync(join(tmpdir(), 'cm-test-'));
++  try {
++    fn(tmpDir);
++  } finally {
++    rmSync(tmpDir, { recursive: true, force: true });
++  }
++}
++
++/** 在 tmpDir/repo 下初始化仓库并提交 msg, 返回仓库路径 */
++function initRepo(tmpDir, ...messages) {
++  const repoDir = join(tmpDir, 'repo');
++  mkdirSync(repoDir, { recursive: true });
++  execFileSync('git', ['init'], { cwd: repoDir });
++  execFileSync('git', ['config', 'user.email', 'test@test.com'], { cwd: repoDir });
++  execFileSync('git', ['config', 'user.name', 'Tester'], { cwd: repoDir });
++
++  for (const msg of messages) {
++    writeFileSync(join(repoDir, 'file.txt'), msg, 'utf-8');
++    execFileSync('git', ['add', '.'], { cwd: repoDir });
++    execFileSync('git', ['commit', '-m', msg], { cwd: repoDir });
++  }
++  return repoDir;
++}
++
++// 测试1: 有历史时返回正确格式（hash 8位、date 无时区、message 完整）
++runTest('有历史时返回正确格式', (tmpDir) => {
++  const repoDir = initRepo(tmpDir, 'first commit', 'second commit');
++
++  const log = getLog({ cwd: repoDir });
++  assert(log.length === 2, '返回 2 条记录');
++
++  assert(log[0].hash.length === 8, 'hash 为 8 位');
++  assert(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(log[0].date), 'date 格式为 YYYY-MM-DD HH:mm:ss 无时区');
++  assert(log[0].message === 'second commit', 'message 正确（最新 commit）');
++  assert(log[1].message === 'first commit', 'message 正确（最早 commit）');
++
++  // 验证 hash 是真实的前 8 位
++  const fullHash = execFileSync('git', ['log', '--format=%H', '--max-count=1'], { cwd: repoDir, encoding: 'utf-8' }).trim();
++  assert(log[0].hash === fullHash.slice(0, 8), 'hash 为完整 hash 的前 8 位');
++});
++
++// 测试2: 空仓库返回空数组
++runTest('空仓库返回空数组', (tmpDir) => {
++  const repoDir = join(tmpDir, 'empty-repo');
++  mkdirSync(repoDir, { recursive: true });
++  execFileSync('git', ['init'], { cwd: repoDir });
++
++  const log = getLog({ cwd: repoDir });
++  assert(Array.isArray(log), '返回数组');
++  assert(log.length === 0, '数组为空');
++});
++
++// 测试3: count 限制
++runTest('count 限制', (tmpDir) => {
++  const repoDir = initRepo(tmpDir, 'c1', 'c2', 'c3', 'c4', 'c5');
++
++  const log = getLog({ cwd: repoDir, count: 3 });
++  assert(log.length === 3, 'count=3 时只返回 3 条');
++  assert(log[0].message === 'c5', '最新消息为 c5');
++  assert(log[2].message === 'c3', '第三条消息为 c3');
++});
++
++// 测试4: filePath 过滤
++runTest('filePath 过滤', (tmpDir) => {
++  const repoDir = join(tmpDir, 'repo');
++  mkdirSync(repoDir, { recursive: true });
++  execFileSync('git', ['init'], { cwd: repoDir });
++  execFileSync('git', ['config', 'user.email', 'test@test.com'], { cwd: repoDir });
++  execFileSync('git', ['config', 'user.name', 'Tester'], { cwd: repoDir });
++
++  // 提交到 a.txt
++  writeFileSync(join(repoDir, 'a.txt'), 'aaa', 'utf-8');
++  execFileSync('git', ['add', 'a.txt'], { cwd: repoDir });
++  execFileSync('git', ['commit', '-m', 'commit a'], { cwd: repoDir });
++
++  // 提交到 b.txt
++  writeFileSync(join(repoDir, 'b.txt'), 'bbb', 'utf-8');
++  execFileSync('git', ['add', 'b.txt'], { cwd: repoDir });
++  execFileSync('git', ['commit', '-m', 'commit b'], { cwd: repoDir });
++
++  // 再提交到 a.txt
++  writeFileSync(join(repoDir, 'a.txt'), 'aaa2', 'utf-8');
++  execFileSync('git', ['add', 'a.txt'], { cwd: repoDir });
++  execFileSync('git', ['commit', '-m', 'commit a2'], { cwd: repoDir });
++
++  // 过滤 a.txt 应返回 2 条
++  const logA = getLog({ cwd: repoDir, filePath: 'a.txt' });
++  assert(logA.length === 2, 'a.txt 相关记录为 2 条');
++  assert(logA[0].message === 'commit a2', 'a.txt 过滤后最新为 commit a2');
++  assert(logA[1].message === 'commit a', 'a.txt 过滤后第二条为 commit a');
++
++  // 过滤 b.txt 应返回 1 条
++  const logB = getLog({ cwd: repoDir, filePath: 'b.txt' });
++  assert(logB.length === 1, 'b.txt 相关记录为 1 条');
++  assert(logB[0].message === 'commit b', 'b.txt 过滤后为 commit b');
++});
++
++// 测试5: 目录不存在时返回空数组
++runTest('目录不存在时返回空数组', (tmpDir) => {
++  const log = getLog({ cwd: join(tmpDir, 'nonexistent') });
++  assert(Array.isArray(log), '返回数组');
++  assert(log.length === 0, '数组为空');
++});
++
++// 测试6: 非 git 目录返回空数组
++runTest('非 git 目录返回空数组', (tmpDir) => {
++  const log = getLog({ cwd: tmpDir });
++  assert(Array.isArray(log), '返回数组');
++  assert(log.length === 0, '数组为空');
++});
++
++console.log(`\n结果: ${passed} 通过, ${failed} 失败`);
++process.exit(failed > 0 ? 1 : 0);

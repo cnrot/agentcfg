@@ -1,3 +1,18 @@
+# Task 8: Claude Code hook 适配器
+
+项目目录: C:\Users\admin\config-mgr
+
+## 文件
+- Create: `C:\Users\admin\config-mgr\src\hooks\claude.js`
+- Create: `C:\Users\admin\config-mgr\src\hooks\claude.test.js`
+
+## 接口
+- `installClaudeHooks(claudeDir, commitScriptPath)` → `{ installed: boolean, message: string }`
+- `uninstallClaudeHooks(claudeDir)` → `{ uninstalled: boolean, message: string }`
+
+## 完整代码
+
+```javascript
 import { existsSync, readFileSync, writeFileSync, copyFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -10,22 +25,19 @@ export function installClaudeHooks(claudeDir, commitScriptPath) {
   if (!existsSync(settingsPath)) {
     return { installed: false, message: 'settings.json 不存在' };
   }
+  const backupPath = settingsPath + '.bak.config-mgr';
+  copyFileSync(settingsPath, backupPath);
   const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
-  // 先做幂等检测，再备份
+  const templatePath = join(TEMPLATE_DIR, 'hooks-claude.json');
+  const template = JSON.parse(readFileSync(templatePath, 'utf-8'));
+  const hookConfig = JSON.parse(
+    JSON.stringify(template).replaceAll('__COMMIT_SCRIPT__', commitScriptPath)
+  );
   if (settings.hooks?.PreToolUse?.some(h =>
     h.hooks?.some(hk => hk.command?.includes('commit.js'))
   )) {
     return { installed: false, message: 'Claude Code hooks 已注册，跳过' };
   }
-  const backupPath = settingsPath + '.bak.config-mgr';
-  copyFileSync(settingsPath, backupPath);
-  const templatePath = join(TEMPLATE_DIR, 'hooks-claude.json');
-  const template = JSON.parse(readFileSync(templatePath, 'utf-8'));
-  // 转义 Windows 路径中的反斜杠，避免 JSON.parse 失败
-  const escapedPath = commitScriptPath.replace(/\\/g, '\\\\');
-  const hookConfig = JSON.parse(
-    JSON.stringify(template).replaceAll('__COMMIT_SCRIPT__', escapedPath)
-  );
   settings.hooks = settings.hooks || {};
   settings.hooks.PreToolUse = [
     ...(settings.hooks.PreToolUse || []),
@@ -56,3 +68,13 @@ export function uninstallClaudeHooks(claudeDir) {
   }
   return { uninstalled: true, message: 'Claude Code hooks 已移除' };
 }
+```
+
+## 步骤
+1. 创建 src/hooks/claude.js（逐字符复制上方代码）
+2. 创建 src/hooks/claude.test.js（覆盖：安装成功、重复安装幂等跳过、卸载成功、settings.json 不存在时优雅处理）
+3. 运行测试全部通过
+4. 提交: `git add src/hooks/claude.js src/hooks/claude.test.js && git commit -m "feat: implement Claude Code hook adapter"`
+5. 报告: C:\Users\admin\config-mgr\.superpowers\sdd\task-8-report.md
+
+返回状态：DONE

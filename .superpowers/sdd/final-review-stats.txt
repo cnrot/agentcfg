@@ -1,0 +1,39 @@
+ .gitignore                   |   2 +
+ README.md                    |  73 +++++++++++
+ SKILL.md                     | 303 +++++++++++++++++++++++++++++++++++++++++++
+ UNINSTALL.md                 |  44 +++++++
+ bin/config-mgr.js            |  30 +++++
+ package.json                 |  22 ++++
+ scripts/.gitkeep             |   0
+ src/core/.gitkeep            |   0
+ src/core/commit.js           |  39 ++++++
+ src/core/commit.test.js      | 100 ++++++++++++++
+ src/core/diff.js             |  55 ++++++++
+ src/core/diff.test.js        | 129 ++++++++++++++++++
+ src/core/init.js             |  29 +++++
+ src/core/init.test.js        | 120 +++++++++++++++++
+ src/core/log.js              |  18 +++
+ src/core/log.test.js         | 138 ++++++++++++++++++++
+ src/core/squash.js           |  42 ++++++
+ src/core/squash.test.js      | 166 ++++++++++++++++++++++++
+ src/hooks/.gitkeep           |   0
+ src/hooks/claude.js          |  57 ++++++++
+ src/hooks/claude.test.js     | 125 ++++++++++++++++++
+ src/hooks/codex.js           |  62 +++++++++
+ src/hooks/codex.test.js      | 116 +++++++++++++++++
+ src/hooks/cursor.js          |  46 +++++++
+ src/hooks/cursor.test.js     |  91 +++++++++++++
+ src/hooks/opencode.js        |  28 ++++
+ src/hooks/opencode.test.js   |  78 +++++++++++
+ src/install.js               | 115 ++++++++++++++++
+ src/install.test.js          |  76 +++++++++++
+ src/recover.js               |  62 +++++++++
+ src/recover.test.js          | 131 +++++++++++++++++++
+ src/uninstall.js             |  38 ++++++
+ templates/.gitkeep           |   0
+ templates/gitignore          |  22 ++++
+ templates/hooks-claude.json  |  16 +++
+ templates/hooks-codex.json   |  16 +++
+ templates/hooks-cursor.json  |  15 +++
+ templates/plugin-opencode.ts |  15 +++
+ 38 files changed, 2419 insertions(+)

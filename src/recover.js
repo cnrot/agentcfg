@@ -2,17 +2,23 @@ import { join } from 'path';
 import { homedir } from 'os';
 import { existsSync } from 'fs';
 import { getLog } from './core/log.js';
-import { generateDiffReport } from './core/diff.js';
+import { detectAgents } from './install.js';
 
 /**
  * 恢复入口（对话式交互，输出恢复指引给 LLM/Skill 使用）
  * @param {string} [targetFile] - 可选：要恢复的文件路径
  */
 export default async function recover(targetFile) {
-  const gitDir = join(homedir(), '.claude');
+  const agents = detectAgents();
+  if (agents.length === 0) {
+    console.log('❌ 未检测到支持的 AI 工具，请先执行 config-mgr init');
+    return;
+  }
+  // 默认使用第一个检测到的 agent 目录
+  const gitDir = agents[0].dir;
 
   if (!existsSync(join(gitDir, '.git'))) {
-    console.log('❌ .claude/ 目录未初始化 git 仓库');
+    console.log(`❌ ${gitDir} 目录未初始化 git 仓库`);
     console.log('   请先执行 config-mgr init');
     return;
   }
