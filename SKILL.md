@@ -42,7 +42,7 @@ cd ~/__AGENT_DIR__ && git log --oneline
 
 **如果以上任意特征缺失，请告知用户先执行：**
 ```bash
-npx agentcfg init
+agentcfg init
 ```
 
 ---
@@ -225,7 +225,7 @@ du -sh ~/__AGENT_DIR__/.git
 **解决：**
 ```bash
 # 执行安装命令
-npx agentcfg init
+agentcfg init
 ```
 然后告知用户："agentcfg 已重新初始化，首次 commit 已创建。"
 
@@ -267,7 +267,7 @@ cat ~/.codex/config.toml | grep hooks
 
 2. 如果配置缺失：
 ```bash
-npx agentcfg init
+agentcfg init
 ```
 
 3. 如果配置存在但不触发，检查 commit.js 路径是否正确：
@@ -298,6 +298,6 @@ agentcfg 会自动压缩 90 天前的 commit 以保持历史整洁。
 
 - **不要手动删除 .git 目录**，否则丢失所有历史
 - **不要手动 git checkout 覆盖文件**，走三步恢复法
-- **如果修改了 settings.json 导致 hooks 不生效**，重新执行 `npx agentcfg init`
+- **如果修改了 settings.json 导致 hooks 不生效**，重新执行 `agentcfg init`
 - **如需长期保留关键版本**，告知 LLM 对某个 commit 打 tag
 - 系统每季度自动压缩 90 天前的 commit，不会丢失内容

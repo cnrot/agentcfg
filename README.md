@@ -27,8 +27,16 @@
 
 ## 安装
 
+### 全局安装（推荐）
+
 ```bash
-npx agentcfg init
+npm install -g agentcfg
+```
+
+安装完成后执行安装命令：
+
+```bash
+agentcfg init
 ```
 
 安装过程：
@@ -64,7 +72,7 @@ agentcfg/
 ## 卸载
 
 ```bash
-npx agentcfg uninstall
+agentcfg uninstall
 ```
 
 如需删除 .git 仓库，手动执行：

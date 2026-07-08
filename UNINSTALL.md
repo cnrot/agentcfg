@@ -3,7 +3,7 @@
 ## 自动卸载
 
 ```bash
-npx agentcfg uninstall
+agentcfg uninstall
 ```
 
 自动完成：
@@ -41,4 +41,5 @@ trash ~/.codex/.git
 
 如果卸载后反悔了：
 - settings.json 备份位于 `~/.claude/settings.json.bak.agentcfg`
-- .git 仓库不主动删除，可以重新 `npx agentcfg init`
+- .git 仓库不主动删除，可以重新 `agentcfg init`
+```

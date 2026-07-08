@@ -1,6 +1,6 @@
 {
   "name": "agentcfg",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "基于 Git 的 AI 工具配置文件版本控制系统",
   "type": "module",
   "bin": {
