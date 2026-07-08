@@ -1,8 +1,8 @@
 # agentcfg
 
-> 基于 Git 的 AI 工具配置文件版本控制系统
+> 基于 Git 的 AI 编程 Agent 工具配置文件版本控制系统。
 
-一句话：**自动备份你的 AI 工具核心配置，随时可追溯，精准可恢复。**
+一句话：**自动备份你的 AI 编程 Agent 工具的核心配置，随时可追溯，精准可恢复。** 本项目完全由 vibe coding 开发的，有问题欢迎 issues
 
 ## 痛点
 
@@ -31,8 +31,8 @@
 npx agentcfg init
 ```
 
-安装脚本会自动：
-1. 检测当前环境中的 AI 工具
+安装过程：
+1. 检测当前环境中的 Agent 工具
 2. 在配置目录初始化 git 仓库
 3. 写入 .gitignore 排除临时文件
 4. 注册 hooks 实现自动备份
@@ -41,7 +41,7 @@ npx agentcfg init
 ## 恢复
 
 agentcfg 不是通过 CLI 恢复，而是**通过 AI agent 对话恢复**。
-安装到各环境的 SKILL.md 会教会 LLM 如何操作。
+安装到各环境的 SKILL.md 会教会 Agent 如何操作。
 
 用户只需说：
 - "帮我把前天改的 CLAUDE.md 找回来"

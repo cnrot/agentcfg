@@ -105,12 +105,12 @@ export default async function install() {
         join(__dirname, '../SKILL.md'), 'utf-8'
       ).replaceAll('__AGENT_DIR__', agentDirName);
       writeFileSync(skillPath, skillContent, 'utf-8');
-      console.log('   ✅ SKILL.md 已安装');
+      console.log(`   ✅ SKILL.md 已安装 → ${skillPath}`);
     } else {
-      console.log('   ℹ️  SKILL.md 已存在，跳过');
+      console.log(`   ℹ️  SKILL.md 已存在 → ${skillPath}`);
     }
   }
 
   console.log('\n✅ agentcfg 安装完成！');
-  console.log('   SKILL.md 已安装到各技能目录，AI agent 将自动获取操作指引。');
+  console.log('   AI agent 下次对话时将自动读取 SKILL.md 获取操作指引。');
 }
