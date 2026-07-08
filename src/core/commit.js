@@ -1,5 +1,5 @@
 import { execFileSync } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 /**
@@ -23,6 +23,15 @@ export function commit({ cwd, source = 'hook', toolName = 'unknown' }) {
     }).trim();
     if (!status) {
       return { committed: false, message: '无未提交变更，跳过' };
+    }
+    // 先校验 settings.json 合法性，防止损坏的 JSON 被暂存
+    const settingsPath = join(cwd, 'settings.json');
+    if (existsSync(settingsPath)) {
+      try {
+        JSON.parse(readFileSync(settingsPath, 'utf-8'));
+      } catch {
+        return { committed: false, message: 'settings.json 格式错误，跳过提交' };
+      }
     }
     // git status --porcelain 有输出说明存在已追踪文件的变更或未追踪文件
     // gitignore 排除的文件不会出现在 status 输出中

@@ -40,19 +40,28 @@ export function uninstallClaudeHooks(claudeDir) {
   if (!existsSync(settingsPath)) {
     return { uninstalled: false, message: 'settings.json 不存在' };
   }
-  const backupPath = settingsPath + '.bak.agentcfg';
-  if (existsSync(backupPath)) {
-    copyFileSync(backupPath, settingsPath);
-    return { uninstalled: true, message: '已从备份恢复 settings.json' };
+
+  // 优先从 settings.json 中增量剥离 agentcfg 条目
+  // 这样能保留其他工具注册的 hooks（MCP 等），避免"恢复备份"一刀切
+  try {
+    const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+    if (settings.hooks?.PreToolUse) {
+      settings.hooks.PreToolUse = settings.hooks.PreToolUse.filter(h =>
+        !h.hooks?.some(hk => hk.command?.includes('commit.js'))
+      );
+      if (settings.hooks.PreToolUse.length === 0) delete settings.hooks.PreToolUse;
+      if (Object.keys(settings.hooks).length === 0) delete settings.hooks;
+      writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
+      return { uninstalled: true, message: 'agentcfg hooks 已移除' };
+    }
+    return { uninstalled: true, message: 'agentcfg hooks 未找到，无需卸载' };
+  } catch {
+    // settings.json 损坏时，从备份恢复（弱于增量剥离，仅作为 fallback）
+    const backupPath = settingsPath + '.bak.agentcfg';
+    if (existsSync(backupPath)) {
+      copyFileSync(backupPath, settingsPath);
+      return { uninstalled: true, message: '已从备份恢复 settings.json' };
+    }
+    return { uninstalled: false, message: 'settings.json 解析失败且无备份可用' };
   }
-  const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
-  if (settings.hooks?.PreToolUse) {
-    settings.hooks.PreToolUse = settings.hooks.PreToolUse.filter(h =>
-      !h.hooks?.some(hk => hk.command?.includes('commit.js'))
-    );
-    if (settings.hooks.PreToolUse.length === 0) delete settings.hooks.PreToolUse;
-    if (Object.keys(settings.hooks).length === 0) delete settings.hooks;
-    writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
-  }
-  return { uninstalled: true, message: 'agentcfg hooks 已移除' };
 }

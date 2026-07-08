@@ -36,9 +36,15 @@ export default async function uninstall() {
     console.log(`  OpenCode: ${result.message}`);
   }
 
-  console.log('\n⚠️  是否删除 .git 仓库？这会永久丢失所有备份历史！');
-  console.log('   如需删除，请手动执行:');
+  console.log('  ⚠️  如需删除 .git 仓库（会永久丢失所有备份历史），请手动执行:');
   console.log('    trash ~/.claude/.git');
   console.log('    trash ~/.cursor/.git');
   console.log('    trash ~/.codex/.git');
+  console.log('');
+  console.log('  ⚠️  如需清理 npm 全局 CLI 包装器残留，请执行:');
+  console.log('    npm uninstall -g agentcfg');
+  console.log('    # 然后手动删除 bin 目录下的 agentcfg 包装文件');
+  console.log('    trash "$(npm root -g)/../bin/agentcfg"');
+  console.log('    trash "$(npm root -g)/../bin/agentcfg.cmd"');
+  console.log('    trash "$(npm root -g)/../bin/agentcfg.ps1"');
 }

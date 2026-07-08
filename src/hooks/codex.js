@@ -36,8 +36,8 @@ export function installCodexHooks(codexDir, commitScriptPath) {
   }
   if (existsSync(configPath)) {
     const config = readFileSync(configPath, 'utf-8');
-    if (config.includes('hooks = false')) {
-      writeFileSync(configPath, config.replace('hooks = false', 'hooks = true'), 'utf-8');
+    if (/^hooks\s*=\s*false\s*$/m.test(config)) {
+      writeFileSync(configPath, config.replace(/^hooks\s*=\s*false\s*$/m, 'hooks = true'), 'utf-8');
     } else if (!config.includes('[features]')) {
       writeFileSync(configPath, config.trimEnd() + '\n\n' + FEATURE_FLAG_TOML, 'utf-8');
     } else if (!config.includes('hooks = true')) {

@@ -125,5 +125,16 @@ runTest('toggles hooks = false to hooks = true', (tmpDir) => {
   assert(config.includes('other = true'), '其他配置应保留');
 });
 
+// Test 7: hooks=false 无空格时也能正确切换
+runTest('handles hooks=false without spaces', (tmpDir) => {
+  const configPath = join(tmpDir, 'config.toml');
+  writeFileSync(configPath, '[features]\nhooks=false\n', 'utf-8');
+
+  installCodexHooks(tmpDir, '/usr/bin/commit.js');
+
+  const config = readFileSync(configPath, 'utf-8');
+  assert(config.includes('hooks = true'), 'hooks 应已切换为 true');
+});
+
 console.log(`\nResult: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

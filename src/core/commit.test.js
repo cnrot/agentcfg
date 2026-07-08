@@ -96,5 +96,27 @@ runTest('git 操作失败时不会抛出异常', (tmpDir) => {
   assert(threw === false, '不应抛出异常');
 });
 
+// 测试6: settings.json 损坏时拒绝提交
+runTest('settings.json 损坏时跳过提交', (tmpDir) => {
+  const repoDir = join(tmpDir, 'repo');
+  mkdirSync(repoDir, { recursive: true });
+  execFileSync('git', ['init'], { cwd: repoDir });
+  writeFileSync(join(repoDir, 'test.txt'), 'initial');
+  execFileSync('git', ['add', '.'], { cwd: repoDir });
+  execFileSync('git', ['commit', '-m', 'init'], { cwd: repoDir });
+  // 写入损坏的 settings.json
+  writeFileSync(join(repoDir, 'settings.json'), '{ broken json ', 'utf-8');
+  // 再改一个文件触发 diff
+  writeFileSync(join(repoDir, 'test.txt'), 'modified', 'utf-8');
+
+  const result = commit({ cwd: repoDir, source: 'pre_tool', toolName: 'Bash' });
+  assert(result.committed === false, 'committed 应为 false');
+  assert(result.message.includes('格式错误'), '消息应提示格式错误');
+
+  // 验证工作区仍为 dirty（没有被 git add 暂存）
+  const status = execFileSync('git', ['status', '--porcelain'], { cwd: repoDir, encoding: 'utf-8' }).trim();
+  assert(status.length > 0, '错误文件不应被暂存');
+});
+
 console.log(`\n结果: ${passed} 通过, ${failed} 失败`);
 process.exit(failed > 0 ? 1 : 0);

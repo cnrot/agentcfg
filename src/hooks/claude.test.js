@@ -65,18 +65,22 @@ runTest('re-install is idempotent (skips)', (tmpDir) => {
   assert(result.message === 'agentcfg hooks 已注册，跳过', '消息应提示已注册跳过');
 });
 
-// Test 3: 卸载成功 - 从备份恢复
-runTest('uninstall restores from backup', (tmpDir) => {
+// Test 3: 卸载优先走增量剥离（不依赖备份恢复）
+runTest('uninstall prefers incremental stripping over backup', (tmpDir) => {
   createSettings(tmpDir, { hooks: {} });
   installClaudeHooks(tmpDir, '/usr/bin/commit.js');
   const result = uninstallClaudeHooks(tmpDir);
   assert(result.uninstalled === true, 'uninstalled 应为 true');
-  assert(result.message === '已从备份恢复 settings.json', '消息应提示从备份恢复');
+  assert(result.message === 'agentcfg hooks 已移除', '消息应提示增量移除');
 
-  // 验证恢复后的 settings 没有 hooks
+  // 备份文件应保留（不用于恢复，避免丢掉其他工具的 hooks）
+  const backupPath = join(tmpDir, 'settings.json.bak.agentcfg');
+  assert(existsSync(backupPath), '备份文件应仍存在');
+
+  // 验证卸载后 settings 没有 agentcfg 条目
   const raw = readFileSync(join(tmpDir, 'settings.json'), 'utf-8');
   const settings = JSON.parse(raw);
-  assert(!settings.hooks?.PreToolUse, '恢复后不应有 PreToolUse');
+  assert(!settings.hooks?.PreToolUse, '卸载后不应有 PreToolUse');
 });
 
 // Test 4: 无备份时卸载 - 从 settings.json 剥离 hooks
@@ -119,6 +123,24 @@ runTest('uninstall handles missing settings.json', (tmpDir) => {
   const result = uninstallClaudeHooks(tmpDir);
   assert(result.uninstalled === false, 'uninstalled 应为 false');
   assert(result.message === 'settings.json 不存在', '消息应提示文件不存在');
+});
+
+// Test 7: settings.json 损坏时从备份恢复
+runTest('uninstall restores from backup when settings.json is corrupt', (tmpDir) => {
+  // 创建有效的 settings.json 并安装
+  createSettings(tmpDir, { hooks: {} });
+  installClaudeHooks(tmpDir, '/usr/bin/commit.js');
+  // 损坏 settings.json
+  writeFileSync(join(tmpDir, 'settings.json'), '{ broken json', 'utf-8');
+
+  const result = uninstallClaudeHooks(tmpDir);
+  assert(result.uninstalled === true, 'uninstalled 应为 true');
+  assert(result.message === '已从备份恢复 settings.json', '消息应提示从备份恢复');
+
+  // 验证恢复后的 settings.json 是合法的 JSON
+  const raw = readFileSync(join(tmpDir, 'settings.json'), 'utf-8');
+  const settings = JSON.parse(raw);
+  assert(typeof settings === 'object', '恢复后应为合法 JSON');
 });
 
 console.log(`\nResult: ${passed} passed, ${failed} failed`);
