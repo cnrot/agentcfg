@@ -6,7 +6,6 @@ node_modules/
 docs/superpowers/
 docs/reviews/
 docs/sdd/
-docs/specs/
 
 # 构建产物
 *.tgz
