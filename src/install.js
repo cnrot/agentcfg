@@ -34,16 +34,10 @@ export function detectAgents() {
     agents.push({ type: 'codex', dir: codexDir });
   }
 
-  // OpenCode（项目级，扫描多个可能位置）
-  const possibleOpencodeDirs = [
-    '.opencode',
-    join(process.cwd(), '.opencode'),
-  ];
-  for (const dir of possibleOpencodeDirs) {
-    if (existsSync(dir)) {
-      agents.push({ type: 'opencode', dir: join(dir) });
-      break;
-    }
+  // OpenCode（项目级，扫描当前工作目录）
+  const opencodeDir = join(process.cwd(), '.opencode');
+  if (existsSync(opencodeDir)) {
+    agents.push({ type: 'opencode', dir: opencodeDir });
   }
 
   return agents;

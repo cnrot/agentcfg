@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, rmSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -9,6 +9,28 @@ const FEATURE_FLAG_TOML = `# agentcfg: 启用 hooks 支持（由 agentcfg 自动
 [features]
 hooks = true
 `;
+
+const META_FILENAME = 'config.toml.agentcfg-meta';
+
+/**
+ * 解析 config.toml 中现有的 hooks 值
+ * @returns {string|null} 'true' / 'false' / null（未设置）
+ */
+function readHooksValue(configText) {
+  const m = configText.match(/^hooks\s*=\s*(true|false)\s*$/m);
+  return m ? m[1] : null;
+}
+
+/**
+ * 写入 agentcfg 元数据，记录安装前的 hooks 状态
+ */
+function writeMeta(codexDir, originalHooksValue, hadFeaturesSection) {
+  const metaPath = join(codexDir, META_FILENAME);
+  writeFileSync(metaPath, JSON.stringify({
+    originalHooksValue,    // 'true' | 'false' | null
+    hadFeaturesSection,    // boolean
+  }), 'utf-8');
+}
 
 export function installCodexHooks(codexDir, commitScriptPath) {
   const hooksPath = join(codexDir, 'hooks.json');
@@ -36,6 +58,11 @@ export function installCodexHooks(codexDir, commitScriptPath) {
   }
   if (existsSync(configPath)) {
     const config = readFileSync(configPath, 'utf-8');
+    // 记录安装前的 hooks 状态，用于卸载时还原
+    const originalHooksValue = readHooksValue(config);
+    const hadFeaturesSection = /^\[features\]\s*$/m.test(config);
+    writeMeta(codexDir, originalHooksValue, hadFeaturesSection);
+
     if (/^hooks\s*=\s*false\s*$/m.test(config)) {
       writeFileSync(configPath, config.replace(/^hooks\s*=\s*false\s*$/m, 'hooks = true'), 'utf-8');
     } else if (!config.includes('[features]')) {
@@ -45,6 +72,8 @@ export function installCodexHooks(codexDir, commitScriptPath) {
       writeFileSync(configPath, updated, 'utf-8');
     }
   } else {
+    // 新建 config.toml，原始未设置任何 hooks 值
+    writeMeta(codexDir, null, false);
     writeFileSync(configPath, FEATURE_FLAG_TOML, 'utf-8');
   }
   return { installed: true, message: 'agentcfg hooks 注册成功（含 feature flag 开启）' };
@@ -64,9 +93,29 @@ export function uninstallCodexHooks(codexDir) {
     writeFileSync(hooksPath, JSON.stringify(hooks, null, 2) + '\n', 'utf-8');
   }
   const configPath = join(codexDir, 'config.toml');
+  const metaPath = join(codexDir, META_FILENAME);
   if (existsSync(configPath)) {
     let config = readFileSync(configPath, 'utf-8');
-    config = config.replace(/^hooks\s*=\s*true$/m, 'hooks = false');
+    if (existsSync(metaPath)) {
+      // 有元数据：按原始状态还原
+      try {
+        const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
+        if (meta.originalHooksValue === null) {
+          // 原始未设置 → 移除 agentcfg 添加的 hooks = true
+          config = config.replace(/^hooks\s*=\s*true\s*$/m, '').replace(/\n{3,}/g, '\n\n');
+        } else {
+          // 还原为原始值（true/false）
+          config = config.replace(/^hooks\s*=\s*true\s*$/m, `hooks = ${meta.originalHooksValue}`);
+        }
+        rmSync(metaPath);
+      } catch {
+        // 元数据损坏时保守处理：恢复为 hooks = false
+        config = config.replace(/^hooks\s*=\s*true\s*$/m, 'hooks = false');
+      }
+    } else {
+      // 无元数据（旧版本安装）：保守关闭
+      config = config.replace(/^hooks\s*=\s*true$/m, 'hooks = false');
+    }
     writeFileSync(configPath, config, 'utf-8');
   }
   return { uninstalled: true, message: 'agentcfg hooks 已移除' };

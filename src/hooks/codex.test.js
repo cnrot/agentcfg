@@ -83,8 +83,12 @@ runTest('uninstall removes hooks entries and disables feature', (tmpDir) => {
   assert(!hasCommit, 'PreToolUse 不应包含 commit.js 条目');
 
   // 验证 config.toml feature flag 已关闭
+  // （安装前无 [features] 段，原始 hooks 值为 null，卸载后 hooks = true 应被移除）
   const config = readFileSync(join(tmpDir, 'config.toml'), 'utf-8');
-  assert(config.includes('hooks = false'), 'config.toml 应包含 hooks = false');
+  assert(!config.includes('hooks = true'),
+    'config.toml 不应再包含 hooks = true（已恢复为原始状态）');
+  assert(!config.match(/^hooks\s*=\s*true\s*$/m),
+    'config.toml 不应匹配 hooks = true 行');
 });
 
 // Test 4: config.toml 已有内容但无 [features] 段时追加

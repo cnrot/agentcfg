@@ -10,8 +10,19 @@
     "node": ">=18"
   },
   "license": "MIT",
+  "keywords": [
+    "git",
+    "ai",
+    "version-control",
+    "backup",
+    "claude-code",
+    "cursor",
+    "codex",
+    "opencode"
+  ],
   "scripts": {
-    "test": "node src/core/commit.test.js && node src/core/init.test.js && node src/core/log.test.js && node src/core/diff.test.js && node src/core/squash.test.js && node src/hooks/claude.test.js && node src/hooks/cursor.test.js && node src/hooks/codex.test.js && node src/hooks/opencode.test.js && node src/install.test.js && node src/recover.test.js"
+    "test": "node src/core/commit.test.js && node src/core/init.test.js && node src/core/log.test.js && node src/core/diff.test.js && node src/core/squash.test.js && node src/hooks/claude.test.js && node src/hooks/cursor.test.js && node src/hooks/codex.test.js && node src/hooks/opencode.test.js && node src/install.test.js && node src/recover.test.js",
+    "prepublishOnly": "npm test"
   },
   "files": [
     "bin/",
@@ -30,6 +41,7 @@
     "templates/",
     "SKILL.md",
     "README.md",
-    "UNINSTALL.md"
+    "UNINSTALL.md",
+    "LICENSE"
   ]
 }

@@ -36,8 +36,8 @@ export function commit({ cwd, source = 'hook', toolName = 'unknown' }) {
     // git status --porcelain 有输出说明存在已追踪文件的变更或未追踪文件
     // gitignore 排除的文件不会出现在 status 输出中
     execFileSync('git', ['add', '.'], { cwd, encoding: 'utf-8' });
-    const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
-    const message = `auto: [${source}] snapshot before ${toolName} at ${timestamp}`;
+    const gitDate = new Date().toISOString();
+    const message = `auto: [${source}] snapshot before ${toolName} at ${gitDate.replace('T', ' ').slice(0, 19)}`;
     execFileSync('git', [
       '-c', 'user.name=agentcfg',
       '-c', 'user.email=agentcfg@local',
@@ -45,7 +45,7 @@ export function commit({ cwd, source = 'hook', toolName = 'unknown' }) {
     ], {
       cwd,
       encoding: 'utf-8',
-      env: { ...process.env, GIT_COMMITTER_DATE: new Date().toISOString() },
+      env: { ...process.env, GIT_COMMITTER_DATE: gitDate, GIT_AUTHOR_DATE: gitDate },
     });
     return { committed: true, message };
   } catch (err) {

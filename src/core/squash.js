@@ -38,10 +38,13 @@ export function squashOldHistory({ cwd, daysThreshold = 90 }) {
   const oldestHash = oldCommits[0];
   const newestOldHash = oldCommits[oldCommits.length - 1];
   // 在 try 外部声明，供 catch 回滚时使用
+  // 提前在 try 开头获取，detached HEAD 时返回 "HEAD"（仍可作兜底用）
   let branchName = '';
 
   try {
-    if (newestOldHash === execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf-8' }).trim()) {
+    const currentHead = execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf-8' }).trim();
+    branchName = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd, encoding: 'utf-8' }).trim();
+    if (newestOldHash === currentHead) {
       // 所有 commit 都超过阈值，压缩全部历史
       // 创建备份分支（catch 回滚时用）
       execFileSync('git', ['branch', '-f', 'backup-before-squash', 'HEAD'], { cwd });
@@ -59,12 +62,13 @@ export function squashOldHistory({ cwd, daysThreshold = 90 }) {
       }
 
       // 创建 archive commit
+      const archiveDate = new Date().toISOString();
       execFileSync('git', [
         '-c', 'user.name=agentcfg',
         '-c', 'user.email=agentcfg@local',
         'commit', '--no-verify', '--no-gpg-sign', '-m',
         `archive: 自动压缩于 ${cutoffStr}（合并 ${oldCommits.length} 个 commit）`],
-      { cwd, encoding: 'utf-8', env: { ...process.env, GIT_COMMITTER_DATE: new Date().toISOString() } });
+      { cwd, encoding: 'utf-8', env: { ...process.env, GIT_COMMITTER_DATE: archiveDate, GIT_AUTHOR_DATE: archiveDate } });
 
       return {
         squashed: true,
@@ -72,8 +76,7 @@ export function squashOldHistory({ cwd, daysThreshold = 90 }) {
       };
     } else {
       // 有近期 commit 需保留：仅压缩旧 commit，将近期 commit rebase 到 archive 之上
-      // 先获取当前分支名，避免切分支后丢失
-      branchName = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd, encoding: 'utf-8' }).trim();
+      // branchName 已在 try 开头获取，此处无需重复
 
       // Step 0: 创建备份分支（rebase 失败时恢复用）
       execFileSync('git', ['branch', '-f', 'backup-before-squash'], { cwd });
@@ -96,12 +99,13 @@ export function squashOldHistory({ cwd, daysThreshold = 90 }) {
         execFileSync('git', ['add', '.'], { cwd });
       }
 
+      const squashDate = new Date().toISOString();
       execFileSync('git', [
         '-c', 'user.name=agentcfg',
         '-c', 'user.email=agentcfg@local',
         'commit', '--no-verify', '--no-gpg-sign', '-m',
         `archive: 自动压缩于 ${cutoffStr}（合并 ${oldCommits.length} 个 commit）`],
-      { cwd, encoding: 'utf-8', env: { ...process.env, GIT_COMMITTER_DATE: new Date().toISOString() } });
+      { cwd, encoding: 'utf-8', env: { ...process.env, GIT_COMMITTER_DATE: squashDate, GIT_AUTHOR_DATE: squashDate } });
 
       // Step 3: 切回原分支，将近期 commit rebase 到 archive 之上
       execFileSync('git', ['checkout', '-q', branchName], { cwd });

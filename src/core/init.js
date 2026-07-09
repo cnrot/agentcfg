@@ -19,12 +19,13 @@ export function initGit(cwd) {
     }
     execFileSync('git', ['add', '.'], { cwd });
     // 设置本地 git user 配置，避免无全局配置时 commit 失败
+    const gitDate = new Date().toISOString();
     execFileSync('git', [
       '-c', 'user.name=agentcfg',
       '-c', 'user.email=agentcfg@local',
       'commit', '--no-verify', '--no-gpg-sign', '-m', 'init: 初始配置快照'], {
       cwd,
-      env: { ...process.env, GIT_COMMITTER_DATE: new Date().toISOString() },
+      env: { ...process.env, GIT_COMMITTER_DATE: gitDate, GIT_AUTHOR_DATE: gitDate },
     });
     return { initialized: true, skipped: false, message: 'git 仓库初始化完成' };
   } catch (err) {

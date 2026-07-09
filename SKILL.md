@@ -276,21 +276,19 @@ agentcfg init
 ls -la /path/to/commit.js
 ```
 
-### 5.4 squash 后找不到旧版本
+### 5.4 旧版本管理
 
-**表现：** 90 天前的 commit 找不到了。
+**关于"找不到 90 天前的 commit"：** 当前版本（v0.1.3）尚未提供自动 squash 入口。
+如需手动压缩历史，可使用 git 原生命令，但推荐走"导出 diff"流程而非重写历史。
 
-**原因：** 系统自动压缩了超过 90 天的历史。
+**关于 tag 豁免：** agentcfg 内部的 `squashOldHistory`（在 v0.1.4 后可能通过 `agentcfg squash` 暴露）
+会自动跳过打了 tag 的 commit。如需长期保留某个版本：
 
-**告知用户：**
+```bash
+git tag 重要版本-2026-07-01 <commit-hash>
 ```
-agentcfg 会自动压缩 90 天前的 commit 以保持历史整洁。
-原始内容没有丢失，只是多个 commit 合并成了一个 archive commit。
 
-如需长期保留某个版本，请告知用户：
-  git tag 重要版本-2026-07-01 <commit-hash>
-打了 tag 的版本不会被压缩。
-```
+打了 tag 的版本不会被未来的 squash 操作影响。
 
 ---
 
@@ -300,4 +298,3 @@ agentcfg 会自动压缩 90 天前的 commit 以保持历史整洁。
 - **不要手动 git checkout 覆盖文件**，走三步恢复法
 - **如果修改了 settings.json 导致 hooks 不生效**，重新执行 `agentcfg init`
 - **如需长期保留关键版本**，告知 LLM 对某个 commit 打 tag
-- 系统每季度自动压缩 90 天前的 commit，不会丢失内容

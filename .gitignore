@@ -1,2 +1,12 @@
 node_modules/
 *.log
+
+# 开发过程产物（SDD methodology 元数据）
+.superpowers/
+docs/superpowers/
+docs/reviews/
+docs/sdd/
+docs/specs/
+
+# 构建产物
+*.tgz

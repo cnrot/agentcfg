@@ -1,9 +1,24 @@
 import { join } from 'path';
 import { homedir } from 'os';
 import { existsSync } from 'fs';
+import { execFileSync } from 'child_process';
 import { getLog } from './core/log.js';
 import { generateDiffReport } from './core/diff.js';
 import { detectAgents } from './install.js';
+
+/**
+ * 校验 commit hash 合法性，避免把任意字符串传给 git show
+ * @returns {string|null} 规范化后的完整 hash，无效则返回 null
+ */
+function resolveCommitHash(cwd, hash) {
+  try {
+    return execFileSync('git', ['rev-parse', '--verify', hash], {
+      cwd, encoding: 'utf-8',
+    }).trim();
+  } catch {
+    return null;
+  }
+}
 
 /**
  * 恢复入口（对话式交互，输出恢复指引给 LLM/Skill 使用）
@@ -16,8 +31,17 @@ export default async function recover(targetFile, commitHash) {
     console.log('❌ 未检测到支持的 AI 工具，请先执行 agentcfg init');
     return;
   }
-  // 默认使用第一个检测到的 agent 目录
-  const gitDir = agents[0].dir;
+
+  // 多 agent 环境下提示用户选择，避免静默选错目录
+  let gitDir;
+  if (agents.length === 1) {
+    gitDir = agents[0].dir;
+  } else {
+    console.log(`⚠️  检测到 ${agents.length} 个 agent 目录：`);
+    agents.forEach((a, i) => console.log(`   [${i}] ${a.type}: ${a.dir}`));
+    console.log(`   当前默认使用 [0] ${agents[0].type}（如需切换，请运行 "agentcfg recover --agent <name> <file> [hash]"）\n`);
+    gitDir = agents[0].dir;
+  }
 
   if (!existsSync(join(gitDir, '.git'))) {
     console.log(`❌ ${gitDir} 目录未初始化 git 仓库`);
@@ -26,8 +50,15 @@ export default async function recover(targetFile, commitHash) {
   }
 
   if (targetFile && commitHash) {
+    // 校验 commit hash 合法性
+    const fullHash = resolveCommitHash(gitDir, commitHash);
+    if (!fullHash) {
+      console.log(`❌ 无效的 commit hash: "${commitHash}"`);
+      console.log('   请先用 `git log` 查找合法的 hash');
+      return;
+    }
     // 生成三段式比对报告
-    console.log(generateDiffReport({ cwd: gitDir, hash: commitHash, filePath: targetFile }));
+    console.log(generateDiffReport({ cwd: gitDir, hash: fullHash, filePath: targetFile }));
     return;
   }
 
