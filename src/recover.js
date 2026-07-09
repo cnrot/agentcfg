@@ -39,7 +39,7 @@ export default async function recover(targetFile, commitHash) {
   } else {
     console.log(`⚠️  检测到 ${agents.length} 个 agent 目录：`);
     agents.forEach((a, i) => console.log(`   [${i}] ${a.type}: ${a.dir}`));
-    console.log(`   当前默认使用 [0] ${agents[0].type}（如需切换，请运行 "agentcfg recover --agent <name> <file> [hash]"）\n`);
+    console.log(`   当前默认使用 [0] ${agents[0].type}\n   暂不支持指定 agent，恢复时将使用该目录的 git 历史\n   如需切换目录，请先 cd 到对应 agent 配置目录再执行\n`);
     gitDir = agents[0].dir;
   }
 

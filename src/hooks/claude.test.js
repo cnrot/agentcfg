@@ -143,5 +143,80 @@ runTest('uninstall restores from backup when settings.json is corrupt', (tmpDir)
   assert(typeof settings === 'object', '恢复后应为合法 JSON');
 });
 
+// Test 8: enabledPlugins 清理 - 剥离 agentcfg 条目，保留其他插件
+runTest('uninstall cleans enabledPlugins but keeps other plugins', (tmpDir) => {
+  const settings = {
+    hooks: {
+      PreToolUse: [{
+        matcher: 'Bash',
+        hooks: [{ type: 'command', command: 'agentcfg commit --source pre_tool' }],
+      }],
+    },
+    enabledPlugins: {
+      'agentcfg@local': true,
+      'karpathy@somewhere': true,
+      'agentcfg-disabled@old': false,
+    },
+  };
+  writeFileSync(join(tmpDir, 'settings.json'), JSON.stringify(settings, null, 2) + '\n', 'utf-8');
+  const result = uninstallClaudeHooks(tmpDir);
+  assert(result.uninstalled === true, 'uninstalled 应为 true');
+
+  const after = JSON.parse(readFileSync(join(tmpDir, 'settings.json'), 'utf-8'));
+  assert(after.enabledPlugins && after.enabledPlugins['karpathy@somewhere'] === true,
+    '其他插件应保留');
+  assert(!after.enabledPlugins['agentcfg@local'], 'agentcfg@local 应被剥离');
+  assert(!after.enabledPlugins['agentcfg-disabled@old'], '含 agentcfg 子串的 key 应被剥离');
+});
+
+// Test 9: extraKnownMarketplaces object 格式清理
+runTest('uninstall cleans extraKnownMarketplaces in object format', (tmpDir) => {
+  const settings = {
+    hooks: {
+      PreToolUse: [{
+        matcher: 'Bash',
+        hooks: [{ type: 'command', command: 'agentcfg commit --source pre_tool' }],
+      }],
+    },
+    extraKnownMarketplaces: {
+      'agentcfg-marketplace': { source: { source: 'github', repo: 'xxx/agentcfg' } },
+      'karpathy-skills': { source: { source: 'github', repo: 'yyy/karpathy' } },
+    },
+  };
+  writeFileSync(join(tmpDir, 'settings.json'), JSON.stringify(settings, null, 2) + '\n', 'utf-8');
+  uninstallClaudeHooks(tmpDir);
+
+  const after = JSON.parse(readFileSync(join(tmpDir, 'settings.json'), 'utf-8'));
+  assert(after.extraKnownMarketplaces && after.extraKnownMarketplaces['karpathy-skills'],
+    '其他 marketplace 应保留');
+  assert(!after.extraKnownMarketplaces['agentcfg-marketplace'],
+    'agentcfg-marketplace 应被剥离');
+});
+
+// Test 10: extraKnownMarketplaces array 格式清理（保留向后兼容）
+runTest('uninstall cleans extraKnownMarketplaces in array format', (tmpDir) => {
+  const settings = {
+    hooks: {
+      PreToolUse: [{
+        matcher: 'Bash',
+        hooks: [{ type: 'command', command: 'agentcfg commit' }],
+      }],
+    },
+    // Claude 实际行为：array 元素的 source 字段直接是 marketplace 名（含 agentcfg 子串）
+    extraKnownMarketplaces: [
+      { source: 'agentcfg-marketplace' },
+      { source: 'other-marketplace' },
+    ],
+  };
+  writeFileSync(join(tmpDir, 'settings.json'), JSON.stringify(settings, null, 2) + '\n', 'utf-8');
+  uninstallClaudeHooks(tmpDir);
+
+  const after = JSON.parse(readFileSync(join(tmpDir, 'settings.json'), 'utf-8'));
+  assert(Array.isArray(after.extraKnownMarketplaces), 'array 格式应保留');
+  assert(after.extraKnownMarketplaces.length === 1, 'array 应只剩 1 项');
+  assert(after.extraKnownMarketplaces[0].source === 'other-marketplace',
+    '剩余项应是 other-marketplace');
+});
+
 console.log(`\nResult: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

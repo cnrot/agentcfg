@@ -73,6 +73,7 @@ export function uninstallClaudeHooks(claudeDir) {
     }
 
     // 3. 移除 extraKnownMarketplaces 中含 "agentcfg" 的源
+    // extraKnownMarketplaces 可能是 object（{ "name": { source: {...} } }）或 array（[{source: "..."}]）
     if (Array.isArray(settings.extraKnownMarketplaces)) {
       const before = settings.extraKnownMarketplaces.length;
       settings.extraKnownMarketplaces = settings.extraKnownMarketplaces.filter(m => {
@@ -83,6 +84,18 @@ export function uninstallClaudeHooks(claudeDir) {
         delete settings.extraKnownMarketplaces;
       }
       if ((settings.extraKnownMarketplaces || []).length !== before) modified = true;
+    } else if (settings.extraKnownMarketplaces && typeof settings.extraKnownMarketplaces === 'object') {
+      // object 格式：按 key 名匹配（含 "agentcfg" 子串的 key 整条删除）
+      const beforeKeys = Object.keys(settings.extraKnownMarketplaces);
+      for (const key of beforeKeys) {
+        if (key.toLowerCase().includes('agentcfg')) {
+          delete settings.extraKnownMarketplaces[key];
+        }
+      }
+      if (Object.keys(settings.extraKnownMarketplaces).length === 0) {
+        delete settings.extraKnownMarketplaces;
+      }
+      if (Object.keys(settings.extraKnownMarketplaces || {}).length !== beforeKeys.length) modified = true;
     }
 
     if (modified) {

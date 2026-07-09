@@ -86,16 +86,29 @@ const commands = {
   log: async () => {
     const { getLog } = await import('../src/core/log.js');
     const { detectAgents } = await import('../src/install.js');
-    const filePath = args.find(a => !a.startsWith('--')) || null;
+    // 先从 args 中抽出 --count N 和 --since X，再从剩余取 filePath
     let count = 10;
-    const ci = args.indexOf('--count');
-    if (ci !== -1 && args[ci + 1]) count = parseInt(args[ci + 1], 10) || 10;
+    let since = null;
+    const remaining = [];
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === '--count' && i + 1 < args.length) {
+        const v = parseInt(args[i + 1], 10);
+        if (Number.isFinite(v) && v > 0) count = v;
+        i++;
+      } else if (args[i] === '--since' && i + 1 < args.length) {
+        since = args[i + 1];
+        i++;
+      } else {
+        remaining.push(args[i]);
+      }
+    }
+    const filePath = remaining[0] || null;
     const agents = detectAgents();
     if (agents.length === 0) {
       console.log('❌ 未检测到支持的 AI 工具');
       return;
     }
-    const entries = getLog({ cwd: agents[0].dir, filePath, count });
+    const entries = getLog({ cwd: agents[0].dir, filePath, count, since });
     if (entries.length === 0) {
       console.log(`⚠️  ${filePath ? `文件 "${filePath}" ` : ''}没有历史记录`);
       return;
