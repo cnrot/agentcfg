@@ -266,9 +266,8 @@ node src/hooks/claude.test.js
 
 ## Contributing
 
-- 添加新 AI 工具支持：见上方"开发工作流"中 7 步流程
 - 报告 bug / 提需求：[GitHub Issues](../../issues)
-- 修改前先读 [`CLAUDE.md`](CLAUDE.md) 了解项目约定
+
 
 ## 卸载
 
