@@ -60,12 +60,22 @@ export function installCodexHooks(codexDir, commitScriptPath) {
   if (existsSync(configPath)) {
     writeFileSync(configPath + '.bak.agentcfg', readFileSync(configPath, 'utf-8'), 'utf-8');
   }
+  const metaPath = join(codexDir, META_FILENAME);
+  // 如果元数据已存在（再次安装/交错场景），保持首次安装的原始值，避免错乱卸载
+  const existingMeta = existsSync(metaPath)
+    ? JSON.parse(readFileSync(metaPath, 'utf-8'))
+    : null;
   if (existsSync(configPath)) {
     const config = readFileSync(configPath, 'utf-8');
-    // 记录安装前的 hooks 状态，用于卸载时还原
-    const originalHooksValue = readHooksValue(config);
-    const hadFeaturesSection = /^\[features\]\s*$/m.test(config);
-    writeMeta(codexDir, originalHooksValue, hadFeaturesSection);
+    if (existingMeta) {
+      // 复用首次安装时记录的原始状态，不重新读取（防止与并发修改/手动编辑混淆）
+      writeMeta(codexDir, existingMeta.originalHooksValue, existingMeta.hadFeaturesSection);
+    } else {
+      // 记录安装前的 hooks 状态，用于卸载时还原
+      const originalHooksValue = readHooksValue(config);
+      const hadFeaturesSection = /^\[features\]\s*$/m.test(config);
+      writeMeta(codexDir, originalHooksValue, hadFeaturesSection);
+    }
 
     if (/^hooks\s*=\s*false\s*$/m.test(config)) {
       writeFileSync(configPath, config.replace(/^hooks\s*=\s*false\s*$/m, 'hooks = true'), 'utf-8');
@@ -105,8 +115,14 @@ export function uninstallCodexHooks(codexDir) {
       try {
         const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
         if (meta.originalHooksValue === null) {
-          // 原始未设置 → 移除 agentcfg 添加的 hooks = true
-          config = config.replace(/^hooks\s*=\s*true\s*$/m, '').replace(/\n{3,}/g, '\n\n');
+          // 原始未设置 hooks：移除 agentcfg 添加的 hooks = true
+          config = config.replace(/^hooks\s*=\s*true\s*$/m, '');
+          // 原始没有 [features] 段：连同 agentcfg 添加的整段都拆掉
+          if (meta.hadFeaturesSection === false) {
+            config = config.replace(/# agentcfg:[^\n]*\n\[features\]\nhooks\s*=\s*true\n?/g, '');
+          }
+          // 折叠多余的空行
+          config = config.replace(/\n{3,}/g, '\n\n');
         } else {
           // 还原为原始值（true/false）
           config = config.replace(/^hooks\s*=\s*true\s*$/m, `hooks = ${meta.originalHooksValue}`);

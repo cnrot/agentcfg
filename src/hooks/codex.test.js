@@ -140,5 +140,37 @@ runTest('handles hooks=false without spaces', (tmpDir) => {
   assert(config.includes('hooks = true'), 'hooks 应已切换为 true');
 });
 
+// Test 9: 二次安装 + 用户后来手动加 hooks = true → 卸载时仍按首次安装的元数据还原
+// 这是有意设计：避免"用户在两次 install 之间手动改 config.toml"导致元数据被错乱覆盖。
+// 副作用：用户后来加的 hooks = true 会在 uninstall 时被抹掉。
+runTest('re-install then manual edit, then uninstall: meta wins (documented behavior)', (tmpDir) => {
+  // 第一次安装：用户原始 config.toml 不存在 → meta.originalHooksValue = null
+  installCodexHooks(tmpDir, '/usr/bin/commit.js');
+  const metaPath = join(tmpDir, 'config.toml.agentcfg-meta');
+  const meta1 = JSON.parse(readFileSync(metaPath, 'utf-8'));
+  assert(meta1.originalHooksValue === null,
+    '首次安装 meta 应为 null（用户原本未设置 hooks）');
+
+  // 模拟用户绕过幂等检测后，手动把 config.toml 改回 hooks = true
+  const configPath = join(tmpDir, 'config.toml');
+  writeFileSync(configPath, 'hooks = true\n', 'utf-8');
+  const hooksPath = join(tmpDir, 'hooks.json');
+  writeFileSync(hooksPath, '{"hooks":{"PreToolUse":[]}}', 'utf-8');
+
+  // 第二次安装：应复用首次 meta，**不**把当前值 true 写回 meta
+  installCodexHooks(tmpDir, '/usr/bin/commit.js');
+  const meta2 = JSON.parse(readFileSync(metaPath, 'utf-8'));
+  assert(meta2.originalHooksValue === null,
+    '二次安装后 meta 仍为 null（首次安装的原始值）');
+
+  // 卸载 → 应按 meta 还原为 null
+  uninstallCodexHooks(tmpDir);
+  const configAfter = readFileSync(configPath, 'utf-8');
+  assert(!/^\s*hooks\s*=\s*true\s*$/m.test(configAfter),
+    '卸载后不应残留 hooks = true（meta 决定还原目标）');
+  assert(!/\[\s*features\s*\]/i.test(configAfter),
+    '卸载后应移除 [features] 段（meta 记录用户原本没有）');
+});
+
 console.log(`\nResult: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
