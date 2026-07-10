@@ -21,6 +21,15 @@ export default async function uninstall() {
       const result = agent.fn(agent.dir);
       console.log(`  ${agent.name}: ${result.message}`);
     }
+    // 清理备份文件（在 existsSync 保护范围内）
+    const backupNames = ['settings.json.bak.agentcfg', 'hooks.json.bak.agentcfg', 'config.toml.bak.agentcfg'];
+    for (const name of backupNames) {
+      const bp = join(agent.dir, name);
+      if (existsSync(bp)) {
+        rmSync(bp);
+        console.log(`  ${agent.name}: 备份文件 ${name} 已清理`);
+      }
+    }
     // 移除 SKILL.md
     const skillPath = join(agent.dir, 'skills/agentcfg/SKILL.md');
     if (existsSync(skillPath)) {
@@ -34,6 +43,12 @@ export default async function uninstall() {
   if (existsSync(opencodeDir)) {
     const result = uninstallOpencodeHooks(opencodeDir);
     console.log(`  OpenCode: ${result.message}`);
+    // 清理 OpenCode 备份文件
+    const opencodeBackup = join(opencodeDir, 'plugin-opencode.ts.bak.agentcfg');
+    if (existsSync(opencodeBackup)) {
+      rmSync(opencodeBackup);
+      console.log('  OpenCode: 备份文件 plugin-opencode.ts.bak.agentcfg 已清理');
+    }
   }
 
   console.log('  ⚠️  如需删除 .git 仓库（会永久丢失所有备份历史），请手动执行:');
