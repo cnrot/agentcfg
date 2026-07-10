@@ -43,8 +43,12 @@ export function installCodexHooks(codexDir, commitScriptPath) {
     }
   }
   const template = readFileSync(join(TEMPLATE_DIR, 'hooks-codex.json'), 'utf-8');
+  // 转义 Windows 路径中的反斜杠，避免 JSON.parse 失败
   const escapedPath = commitScriptPath.replace(/\\/g, '\\\\');
-  const filled = template.replaceAll('__COMMIT_SCRIPT__', escapedPath);
+  const escapedDir = codexDir.replace(/\\/g, '\\\\');
+  const filled = template
+    .replaceAll('__COMMIT_SCRIPT__', escapedPath)
+    .replaceAll('__CONFIG_DIR__', escapedDir);
   // 备份 hooks.json（如果已存在）
   if (existsSync(hooksPath)) {
     writeFileSync(hooksPath + '.bak.agentcfg', readFileSync(hooksPath, 'utf-8'), 'utf-8');

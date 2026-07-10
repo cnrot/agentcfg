@@ -327,7 +327,12 @@ agentcfg verify
 agentcfg init
 ```
 
-3. 如果 hook 存在但不触发，检查 commit.js 路径是否正确：
+3. 如果 hook 注册了但不触发，**99% 是 `process.cwd()` 找不到 .git**：
+   - 检查 settings.json 中 hook 命令是否带 `--dir` 参数（v0.1.8+ 自动注入，旧版本需手动重装）
+   - 旧版表现：Edit/Write/Bash 都不触发 commit.js，或触发了但 message 是"不是 git 仓库"
+   - 解决：执行 `agentcfg init` 重新安装（会自动注入 `--dir` 参数）
+
+4. 如果 commit.js 路径不对，检查：
 ```bash
 # 检查 settings.json 中的 path 是否指向真实存在的文件（跨平台）
 node -e "import('fs').then(({existsSync}) => console.log(existsSync('<commit-script-path>')))"

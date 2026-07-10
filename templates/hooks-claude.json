@@ -6,7 +6,37 @@
         "hooks": [
           {
             "type": "command",
-            "command": "__COMMIT_SCRIPT__ --source pre_tool --tool Bash",
+            "command": "__COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source pre_tool --tool Bash",
+            "statusMessage": "agentcfg: 检测配置文件变更"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source pre_tool --tool Edit",
+            "statusMessage": "agentcfg: 检测配置文件变更"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source pre_tool --tool Write",
+            "statusMessage": "agentcfg: 检测配置文件变更"
+          }
+        ]
+      },
+      {
+        "matcher": "MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source pre_tool --tool MultiEdit",
             "statusMessage": "agentcfg: 检测配置文件变更"
           }
         ]

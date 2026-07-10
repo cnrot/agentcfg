@@ -58,12 +58,15 @@ export function commit({ cwd, source = 'hook', toolName = 'unknown' }) {
 // 用 import.meta.url 与 process.argv[1] 比较（兼容符号链接、Windows 路径变体）
 const argvFile = process.argv[1] ? pathToFileURL(process.argv[1]).href : '';
 if (argvFile && argvFile === import.meta.url) {
-  const cwd = process.cwd();
+  // cwd 默认 process.cwd()，但 hook 上下文不可靠
+  // 推荐通过 --dir 显式传入 agent 配置目录（如 ~/.claude）
+  let cwd = process.cwd();
   let source = 'hook';
   let toolName = 'unknown';
   for (let i = 2; i < process.argv.length; i++) {
     if (process.argv[i] === '--source') source = process.argv[++i] || source;
     if (process.argv[i] === '--tool') toolName = process.argv[++i] || toolName;
+    if (process.argv[i] === '--dir') cwd = process.argv[++i] || cwd;
   }
   const result = commit({ cwd, source, toolName });
   console.log(result.message);

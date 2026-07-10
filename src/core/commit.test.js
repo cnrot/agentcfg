@@ -118,5 +118,26 @@ runTest('settings.json 损坏时跳过提交', (tmpDir) => {
   assert(status.length > 0, '错误文件不应被暂存');
 });
 
+// 测试7: --dir 参数让 commit 找到正确目录（模拟 hook 调用）
+runTest('--dir 参数让 commit 找到正确目录', (tmpDir) => {
+  // 模拟：用户在 ~ 目录，agent config 在 ~/.claude
+  // 之前 cwd=~ 找不到 .git，现在 --dir=~/.claude 能找到
+  const claudeDir = join(tmpDir, '.claude');
+  mkdirSync(claudeDir, { recursive: true });
+  execFileSync('git', ['init'], { cwd: claudeDir });
+  writeFileSync(join(claudeDir, 'CLAUDE.md'), 'initial');
+  execFileSync('git', ['add', '.'], { cwd: claudeDir });
+  execFileSync('git', ['commit', '-m', 'init'], { cwd: claudeDir });
+
+  // 直接调 commit 函数，cwd 指向 .claude
+  writeFileSync(join(claudeDir, 'CLAUDE.md'), 'modified');
+  const result = commit({ cwd: claudeDir, source: 'pre_tool', toolName: 'Edit' });
+  assert(result.committed === true, 'cwd 指向 .claude 时应提交成功');
+  assert(result.message.includes('Edit'), '提交消息应包含工具名 Edit');
+
+  const status = execFileSync('git', ['status', '--porcelain'], { cwd: claudeDir, encoding: 'utf-8' }).trim();
+  assert(status === '', '提交后工作区应干净');
+});
+
 console.log(`\n结果: ${passed} 通过, ${failed} 失败`);
 process.exit(failed > 0 ? 1 : 0);

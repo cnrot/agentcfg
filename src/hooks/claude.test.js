@@ -50,7 +50,25 @@ runTest('install succeeds with valid settings.json', (tmpDir) => {
   const raw = readFileSync(join(tmpDir, 'settings.json'), 'utf-8');
   const settings = JSON.parse(raw);
   assert(Array.isArray(settings.hooks?.PreToolUse), 'PreToolUse 应为数组');
-  assert(settings.hooks.PreToolUse.length > 0, 'PreToolUse 应包含条目');
+  assert(settings.hooks.PreToolUse.length >= 4, 'PreToolUse 应包含 Bash/Edit/Write/MultiEdit 4 个条目');
+
+  // 验证 --dir 参数被替换到 command 中
+  const commands = settings.hooks.PreToolUse.flatMap(h => h.hooks || []).map(h => h.command);
+  // tmpDir 在 Windows 上可能是 C:\Users\...\AppData\Local\Temp\...，含反斜杠
+  // 转义后 cmd 实际看到的是 C:\\Users\\...，所以 --dir 后面跟转义后的路径
+  // 简化：只检查 --dir 参数存在
+  const allHaveDir = commands.every(c => c.includes('--dir '));
+  assert(allHaveDir, '所有 hook 命令应包含 --dir 参数');
+
+  // 验证覆盖了 Bash/Edit/Write/MultiEdit 4 个工具
+  const tools = new Set();
+  for (const c of commands) {
+    if (c.includes('--tool Bash')) tools.add('Bash');
+    if (c.includes('--tool Edit')) tools.add('Edit');
+    if (c.includes('--tool Write')) tools.add('Write');
+    if (c.includes('--tool MultiEdit')) tools.add('MultiEdit');
+  }
+  assert(tools.size === 4, `应覆盖 4 个工具，实际 ${[...tools].join(',')}`);
 
   // 验证备份文件存在
   assert(existsSync(join(tmpDir, 'settings.json.bak.agentcfg')), '备份文件应存在');
