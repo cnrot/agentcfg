@@ -107,12 +107,9 @@ export function uninstallClaudeHooks(claudeDir) {
     }
     return { uninstalled: true, message: 'agentcfg hooks 未找到，无需卸载' };
   } catch {
-    // settings.json 损坏时，从备份恢复（弱于增量剥离，仅作为 fallback）
-    const backupPath = settingsPath + '.bak.agentcfg';
-    if (existsSync(backupPath)) {
-      copyFileSync(backupPath, settingsPath);
-      return { uninstalled: true, message: '已从备份恢复 settings.json' };
-    }
-    return { uninstalled: false, message: 'settings.json 解析失败且无备份可用' };
+    // settings.json 损坏时不再盲目从备份恢复
+    // 原因：备份后用户可能已编辑过 settings.json，盲目覆盖会丢失用户的修改
+    // 此时让用户手动修复或检查文件
+    return { uninstalled: false, message: 'settings.json 解析失败，请手动检查或修复' };
   }
 }

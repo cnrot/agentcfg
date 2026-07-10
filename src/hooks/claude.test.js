@@ -143,8 +143,8 @@ runTest('uninstall handles missing settings.json', (tmpDir) => {
   assert(result.message === 'settings.json 不存在', '消息应提示文件不存在');
 });
 
-// Test 7: settings.json 损坏时从备份恢复
-runTest('uninstall restores from backup when settings.json is corrupt', (tmpDir) => {
+// Test 7: settings.json 损坏时不应盲目覆盖（保护用户后续编辑）
+runTest('uninstall does NOT blindly overwrite settings.json from backup when corrupt', (tmpDir) => {
   // 创建有效的 settings.json 并安装
   createSettings(tmpDir, { hooks: {} });
   installClaudeHooks(tmpDir, '/usr/bin/commit.js');
@@ -152,13 +152,9 @@ runTest('uninstall restores from backup when settings.json is corrupt', (tmpDir)
   writeFileSync(join(tmpDir, 'settings.json'), '{ broken json', 'utf-8');
 
   const result = uninstallClaudeHooks(tmpDir);
-  assert(result.uninstalled === true, 'uninstalled 应为 true');
-  assert(result.message === '已从备份恢复 settings.json', '消息应提示从备份恢复');
-
-  // 验证恢复后的 settings.json 是合法的 JSON
-  const raw = readFileSync(join(tmpDir, 'settings.json'), 'utf-8');
-  const settings = JSON.parse(raw);
-  assert(typeof settings === 'object', '恢复后应为合法 JSON');
+  // 新行为：不应走"已从备份恢复"路径（会覆盖用户可能已编辑的内容）
+  assert(result.message !== '已从备份恢复 settings.json',
+    '消息不应为"已从备份恢复"（会覆盖用户的后续编辑）');
 });
 
 // Test 8: enabledPlugins 清理 - 剥离 agentcfg 条目，保留其他插件
@@ -234,6 +230,37 @@ runTest('uninstall cleans extraKnownMarketplaces in array format', (tmpDir) => {
   assert(after.extraKnownMarketplaces.length === 1, 'array 应只剩 1 项');
   assert(after.extraKnownMarketplaces[0].source === 'other-marketplace',
     '剩余项应是 other-marketplace');
+});
+
+// Test 11: 卸载后保留用户手动添加的无关配置
+runTest('uninstall preserves user-added unrelated settings keys', (tmpDir) => {
+  // 模拟真实场景：install 后用户手动加了 MCP server / 其他配置
+  createSettings(tmpDir, { hooks: {} });
+  installClaudeHooks(tmpDir, '/usr/bin/commit.js');
+
+  // 用户手动添加 mcpServers 无关 key
+  const settingsPath = join(tmpDir, 'settings.json');
+  const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+  settings.mcpServers = {
+    'user-added-server': { command: 'user-cmd', args: ['--user'] },
+  };
+  settings.theme = 'dark';
+  writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
+
+  // 卸载
+  const result = uninstallClaudeHooks(tmpDir);
+  assert(result.uninstalled === true, 'uninstalled 应为 true');
+  assert(result.message.includes('agentcfg hooks 已移除'),
+    '消息应提示增量移除（非备份恢复）');
+
+  // 验证：用户的无关 key 必须保留
+  const after = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+  assert(after.mcpServers && after.mcpServers['user-added-server'],
+    '用户添加的 mcpServers 应保留');
+  assert(after.mcpServers['user-added-server'].command === 'user-cmd',
+    'mcpServers 内容应完整');
+  assert(after.theme === 'dark', '用户添加的 theme 应保留');
+  assert(!after.hooks, 'agentcfg hooks 应被剥离');
 });
 
 console.log(`\nResult: ${passed} passed, ${failed} failed`);
