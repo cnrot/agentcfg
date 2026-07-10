@@ -74,5 +74,5 @@ if (argvFile && argvFile === import.meta.url) {
   }
   const result = commit({ cwd, source, toolName });
   console.log(result.message);
-  process.exit(0);
+  process.exit(result.committed ? 0 : 1);
 }

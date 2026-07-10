@@ -122,9 +122,8 @@ runTest('报告格式包含 commit 信息和文件路径', (tmpDir) => {
   assert(report.includes('├─ Commit:'), '报告包含 Commit 信息');
   assert(report.includes(shortHash), '报告包含 commit hash');
   assert(report.includes('test.txt'), '报告包含文件路径');
-  assert(report.includes('├─ + 新增内容'), '报告包含新增内容标题');
-  assert(report.includes('├─ - 已移除内容'), '报告包含已移除内容标题');
-  assert(report.includes('├─ = 共有内容'), '报告包含共有内容标题');
+  assert(report.includes('两版本完全相同'), '无差异时提示版本一致');
+  assert(!report.includes('├─ + 新增内容'), '无差异时不显示三段式标题');
 });
 
 console.log(`\n结果: ${passed} 通过, ${failed} 失败`);
