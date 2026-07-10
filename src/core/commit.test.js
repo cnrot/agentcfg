@@ -139,5 +139,37 @@ runTest('--dir 参数让 commit 找到正确目录', (tmpDir) => {
   assert(status === '', '提交后工作区应干净');
 });
 
+// 测试8: pre_tool 源应生成 "snapshot before" 消息
+runTest('pre_tool source 生成 "snapshot before" 消息', (tmpDir) => {
+  const repoDir = join(tmpDir, 'repo');
+  mkdirSync(repoDir, { recursive: true });
+  execFileSync('git', ['init'], { cwd: repoDir });
+  writeFileSync(join(repoDir, 'test.txt'), 'initial');
+  execFileSync('git', ['add', '.'], { cwd: repoDir });
+  execFileSync('git', ['commit', '-m', 'init'], { cwd: repoDir });
+
+  writeFileSync(join(repoDir, 'test.txt'), 'modified');
+  const result = commit({ cwd: repoDir, source: 'pre_tool', toolName: 'Bash' });
+  assert(result.committed === true, 'pre_tool 应提交');
+  assert(result.message.includes('snapshot before Bash'), 'pre_tool 消息应含 "snapshot before"');
+  assert(!result.message.includes('snapshot after'), 'pre_tool 不应含 "snapshot after"');
+});
+
+// 测试9: post_edit 源应生成 "snapshot after" 消息（Cursor afterFileEdit）
+runTest('post_edit source 生成 "snapshot after" 消息', (tmpDir) => {
+  const repoDir = join(tmpDir, 'repo');
+  mkdirSync(repoDir, { recursive: true });
+  execFileSync('git', ['init'], { cwd: repoDir });
+  writeFileSync(join(repoDir, 'test.txt'), 'initial');
+  execFileSync('git', ['add', '.'], { cwd: repoDir });
+  execFileSync('git', ['commit', '-m', 'init'], { cwd: repoDir });
+
+  writeFileSync(join(repoDir, 'test.txt'), 'modified');
+  const result = commit({ cwd: repoDir, source: 'post_edit', toolName: 'Edit' });
+  assert(result.committed === true, 'post_edit 应提交');
+  assert(result.message.includes('snapshot after Edit'), 'post_edit 消息应含 "snapshot after"');
+  assert(!result.message.includes('snapshot before'), 'post_edit 不应含 "snapshot before"');
+});
+
 console.log(`\n结果: ${passed} 通过, ${failed} 失败`);
 process.exit(failed > 0 ? 1 : 0);

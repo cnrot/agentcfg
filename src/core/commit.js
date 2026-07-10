@@ -38,7 +38,11 @@ export function commit({ cwd, source = 'hook', toolName = 'unknown' }) {
     // gitignore 排除的文件不会出现在 status 输出中
     execFileSync('git', ['add', '.'], { cwd, encoding: 'utf-8' });
     const gitDate = new Date().toISOString();
-    const message = `auto: [${source}] snapshot before ${toolName} at ${gitDate.replace('T', ' ').slice(0, 19)}`;
+    // 按 source 区分语义：
+    // - pre_tool / pre_shell：PreToolUse 触发，文件未修改 → "before"
+    // - post_edit：PostToolUse 触发（Cursor afterFileEdit），文件已修改 → "after"
+    const timing = source.startsWith('post_') ? 'after' : 'before';
+    const message = `auto: [${source}] snapshot ${timing} ${toolName} at ${gitDate.replace('T', ' ').slice(0, 19)}`;
     execFileSync('git', [
       '-c', 'user.name=agentcfg',
       '-c', 'user.email=agentcfg@local',
