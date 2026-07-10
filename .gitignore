@@ -1,12 +1,12 @@
 node_modules/
 *.log
 
-# 本地 Claude Code 指令文件（不推送）
-CLAUDE.md
-.claude/
-
-# docs/ 整个目录都不推送（开发过程产物）
-docs/
+# 开发过程产物（SDD methodology 元数据）
+.superpowers/
+docs/superpowers/
+docs/reviews/
+docs/sdd/
 
 # 构建产物
 *.tgz
+CLAUDE.md
