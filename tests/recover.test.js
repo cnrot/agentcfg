@@ -6,7 +6,7 @@ import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { execFileSync } from 'child_process';
-import recover from './recover.js';
+import recover from '../src/recover.js';
 
 let passed = 0;
 let failed = 0;

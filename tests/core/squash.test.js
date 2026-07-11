@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { execFileSync } from 'child_process';
-import { squashOldHistory } from './squash.js';
+import { squashOldHistory } from '../../src/core/squash.js';
 
 let passed = 0;
 let failed = 0;

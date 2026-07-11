@@ -3,9 +3,13 @@
  * 验证 squashed arg parsing 与 help 文本等纯逻辑（无需 child_process）
  */
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync, existsSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { tmpdir } from 'os';
 import { execFileSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const BIN_PATH = join(REPO_ROOT, 'bin', 'agentcfg.js');
 
 let passed = 0;
 let failed = 0;
@@ -102,7 +106,7 @@ runTest('parseSquashArgs: --days abc', (_) => {
 
 // ─── 测试 7: 完整夹具驱动 bin/agentcfg.js squashed 帮助输出 ───
 runTest('bin/agentcfg.js squashed --help 输出包含 --force', (_) => {
-  const out = execFileSync('node', [join(process.cwd(), 'bin', 'agentcfg.js'), 'squash', '--help'], {
+  const out = execFileSync('node', [BIN_PATH, 'squash', '--help'], {
     encoding: 'utf-8',
   });
   assert(out.includes('--force'), 'squash --help 应包含 --force');
@@ -110,7 +114,7 @@ runTest('bin/agentcfg.js squashed --help 输出包含 --force', (_) => {
 });
 
 runTest('bin/agentcfg.js ui --help 输出包含 --port / --open', (_) => {
-  const out = execFileSync('node', [join(process.cwd(), 'bin', 'agentcfg.js'), 'ui', '--help'], {
+  const out = execFileSync('node', [BIN_PATH, 'ui', '--help'], {
     encoding: 'utf-8',
   });
   assert(out.includes('--port'), 'ui --help 应包含 --port');
@@ -119,7 +123,7 @@ runTest('bin/agentcfg.js ui --help 输出包含 --port / --open', (_) => {
 });
 
 runTest('总 help 列表含 ui 命令', (_) => {
-  const out = execFileSync('node', [join(process.cwd(), 'bin', 'agentcfg.js')], {
+  const out = execFileSync('node', [BIN_PATH], {
     encoding: 'utf-8',
   });
   assert(/ui\s+/.test(out), '总 help 应列出 ui 命令');

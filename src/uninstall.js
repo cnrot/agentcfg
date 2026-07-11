@@ -44,10 +44,10 @@ export default async function uninstall() {
     const result = uninstallOpencodeHooks(opencodeDir);
     console.log(`  OpenCode: ${result.message}`);
     // 清理 OpenCode 备份文件
-    const opencodeBackup = join(opencodeDir, 'plugin-opencode.ts.bak.agentcfg');
+    const opencodeBackup = join(opencodeDir, 'plugins/agentcfg.ts.bak.agentcfg');
     if (existsSync(opencodeBackup)) {
       rmSync(opencodeBackup);
-      console.log('  OpenCode: 备份文件 plugin-opencode.ts.bak.agentcfg 已清理');
+      console.log('  OpenCode: 备份文件 plugins/agentcfg.ts.bak.agentcfg 已清理');
     }
   }
 

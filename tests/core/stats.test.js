@@ -7,7 +7,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { execFileSync } from 'child_process';
 
-import { buildStats } from './stats.js';
+import { buildStats } from '../../src/core/stats.js';
 
 let passed = 0;
 let failed = 0;

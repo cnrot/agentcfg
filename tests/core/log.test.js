@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { execFileSync } from 'child_process';
-import { getLog } from './log.js';
+import { getLog } from '../../src/core/log.js';
 
 let passed = 0;
 let failed = 0;

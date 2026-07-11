@@ -8,7 +8,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const htmlPath = join(__dirname, '..', 'ui', 'index.html');
+const htmlPath = join(__dirname, '..', '..', 'src', 'ui', 'index.html');
 
 let passed = 0;
 let failed = 0;

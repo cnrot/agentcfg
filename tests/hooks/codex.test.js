@@ -5,7 +5,7 @@
 import { mkdtempSync, writeFileSync, rmSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { installCodexHooks, uninstallCodexHooks } from './codex.js';
+import { installCodexHooks, uninstallCodexHooks } from '../../src/hooks/codex.js';
 
 let passed = 0;
 let failed = 0;

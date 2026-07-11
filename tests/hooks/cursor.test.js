@@ -5,7 +5,7 @@
 import { mkdtempSync, writeFileSync, rmSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { installCursorHooks, uninstallCursorHooks } from './cursor.js';
+import { installCursorHooks, uninstallCursorHooks } from '../../src/hooks/cursor.js';
 
 let passed = 0;
 let failed = 0;

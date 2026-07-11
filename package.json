@@ -21,7 +21,7 @@
     "opencode"
   ],
   "scripts": {
-    "test": "node bin/agentcfg.test.js && node src/core/commit.test.js && node src/core/init.test.js && node src/core/log.test.js && node src/core/diff.test.js && node src/core/squash.test.js && node src/core/show.test.js && node src/core/stats.test.js && node src/hooks/claude.test.js && node src/hooks/cursor.test.js && node src/hooks/codex.test.js && node src/hooks/opencode.test.js && node src/templates.test.js && node src/install.test.js && node src/recover.test.js && node src/verify.test.js && node src/ui/html-static.test.js && node readme.test.js",
+    "test": "node tests/bin/agentcfg.test.js && node tests/core/commit.test.js && node tests/core/init.test.js && node tests/core/log.test.js && node tests/core/diff.test.js && node tests/core/squash.test.js && node tests/core/show.test.js && node tests/core/stats.test.js && node tests/hooks/claude.test.js && node tests/hooks/cursor.test.js && node tests/hooks/codex.test.js && node tests/hooks/opencode.test.js && node tests/templates.test.js && node tests/install.test.js && node tests/recover.test.js && node tests/verify.test.js && node tests/ui/html-static.test.js && node tests/readme.test.js",
     "prepublishOnly": "npm test"
   },
   "files": [

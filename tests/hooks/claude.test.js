@@ -5,7 +5,7 @@
 import { mkdtempSync, writeFileSync, rmSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { installClaudeHooks, uninstallClaudeHooks } from './claude.js';
+import { installClaudeHooks, uninstallClaudeHooks } from '../../src/hooks/claude.js';
 
 let passed = 0;
 let failed = 0;

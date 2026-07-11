@@ -2,7 +2,7 @@
  * src/core/show.js — parseShow / splitByFile 单元测试
  */
 import assert from 'node:assert/strict';
-import { splitByFile } from './show.js';
+import { splitByFile } from '../../src/core/show.js';
 
 let passed = 0;
 let failed = 0;

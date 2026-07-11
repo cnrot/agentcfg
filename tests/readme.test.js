@@ -6,7 +6,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const readme = readFileSync(join(__dirname, 'README.md'), 'utf-8');
+const readme = readFileSync(join(__dirname, '..', 'README.md'), 'utf-8');
 
 let passed = 0;
 let failed = 0;

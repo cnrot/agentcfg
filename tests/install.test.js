@@ -2,7 +2,7 @@
  * install.js 测试
  * 覆盖：无 agent 时输出提示、检测逻辑正确
  */
-import install, { detectAgents } from './install.js';
+import install, { detectAgents } from '../src/install.js';
 
 let passed = 0;
 let failed = 0;

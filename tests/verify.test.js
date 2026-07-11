@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync, rmSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { execFileSync } from 'child_process';
-import { verifyAgent, verifyAll, previewUninstall } from './verify.js';
+import { verifyAgent, verifyAll, previewUninstall } from '../src/verify.js';
 
 let passed = 0;
 let failed = 0;

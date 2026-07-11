@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync, rmSync, mkdirSync, readFileSync, existsSync
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { execFileSync } from 'child_process';
-import { initGit } from './init.js';
+import { initGit } from '../../src/core/init.js';
 
 let passed = 0;
 let failed = 0;

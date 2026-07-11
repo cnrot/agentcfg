@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { execFileSync } from 'child_process';
-import { generateDiffReport } from './diff.js';
+import { generateDiffReport } from '../../src/core/diff.js';
 
 let passed = 0;
 let failed = 0;

@@ -5,7 +5,7 @@
 import { mkdtempSync, rmSync, readFileSync, existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { installOpencodeHooks, uninstallOpencodeHooks } from './opencode.js';
+import { installOpencodeHooks, uninstallOpencodeHooks } from '../../src/hooks/opencode.js';
 
 let passed = 0;
 let failed = 0;
