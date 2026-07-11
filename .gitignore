@@ -8,4 +8,4 @@ docs/
 # 构建产物
 *.tgz
 CLAUDE.md
-.claude/rules/git-commit-no-coauthor.md
+.claude/
