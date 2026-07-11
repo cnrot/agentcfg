@@ -1,9 +1,13 @@
 import { execFileSync } from 'child_process';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 
 export function generateDiffReport({ cwd, hash, filePath }) {
-  const absPath = join(cwd, filePath);
+  const absPath = resolve(cwd, filePath);
+  // 路径校验：防止遍历到 cwd 之外
+  if (!absPath.startsWith(resolve(cwd))) {
+    return `❌ 错误: 文件路径 "${filePath}" 超出工作目录范围`;
+  }
   let currentContent = '';
   let oldContent = '';
 
@@ -46,7 +50,16 @@ export function generateDiffReport({ cwd, hash, filePath }) {
     const lines = diffOutput.split('\n');
     added = lines.filter(l => l.startsWith('+') && !l.startsWith('+++')).map(l => l.slice(1)).join('\n') || '（无新增行）';
     removed = lines.filter(l => l.startsWith('-') && !l.startsWith('---')).map(l => l.slice(1)).join('\n') || '（无移除行）';
-    common = lines.filter(l => l.startsWith(' ')).map(l => l.slice(1)).join('\n') || '（无共有内容）';
+    const commonLines = lines.filter(l => l.startsWith(' ')).map(l => l.slice(1));
+    if (commonLines.length === 0) {
+      common = '（无共有内容）';
+    } else if (commonLines.length <= 20) {
+      common = commonLines.join('\n');
+    } else {
+      const head = commonLines.slice(0, 10).join('\n');
+      const tail = commonLines.slice(-10).join('\n');
+      common = `${head}\n│   ... 中间 ${commonLines.length - 20} 行省略 ...\n${tail}`;
+    }
   } catch {
     added = '（无法计算差异）';
     removed = '（无法计算差异）';

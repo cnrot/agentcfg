@@ -68,9 +68,14 @@ if (argvFile && argvFile === import.meta.url) {
   let source = 'hook';
   let toolName = 'unknown';
   for (let i = 2; i < process.argv.length; i++) {
-    if (process.argv[i] === '--source') source = process.argv[++i] || source;
-    if (process.argv[i] === '--tool') toolName = process.argv[++i] || toolName;
-    if (process.argv[i] === '--dir') cwd = process.argv[++i] || cwd;
+    const arg = process.argv[i];
+    if (arg === '--source' && i + 1 < process.argv.length) {
+      source = process.argv[++i];
+    } else if (arg === '--tool' && i + 1 < process.argv.length) {
+      toolName = process.argv[++i];
+    } else if (arg === '--dir' && i + 1 < process.argv.length) {
+      cwd = process.argv[++i];
+    }
   }
   const result = commit({ cwd, source, toolName });
   console.log(result.message);

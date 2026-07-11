@@ -13,12 +13,31 @@ hooks = true
 const META_FILENAME = 'config.toml.agentcfg-meta';
 
 /**
+ * 去除 TOML 行内注释（# 到行尾），同时处理引号内的 # 不被当作注释
+ */
+function stripTomlComments(line) {
+  let inSingle = false, inDouble = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"' && !inSingle) { inDouble = !inDouble; continue; }
+    if (ch === "'" && !inDouble) { inSingle = !inSingle; continue; }
+    if (ch === '#' && !inSingle && !inDouble) return line.slice(0, i).trimEnd();
+  }
+  return line;
+}
+
+/**
  * 解析 config.toml 中现有的 hooks 值
  * @returns {string|null} 'true' / 'false' / null（未设置）
  */
 function readHooksValue(configText) {
-  const m = configText.match(/^hooks\s*=\s*(true|false)\s*$/m);
-  return m ? m[1] : null;
+  const lines = configText.split('\n');
+  for (const rawLine of lines) {
+    const line = stripTomlComments(rawLine).trim();
+    const m = line.match(/^hooks\s*=\s*(true|false)$/);
+    if (m) return m[1];
+  }
+  return null;
 }
 
 /**
@@ -77,14 +96,28 @@ export function installCodexHooks(codexDir, commitScriptPath) {
       writeMeta(codexDir, originalHooksValue, hadFeaturesSection);
     }
 
-    if (/^hooks\s*=\s*false\s*$/m.test(config)) {
-      writeFileSync(configPath, config.replace(/^hooks\s*=\s*false\s*$/m, 'hooks = true'), 'utf-8');
-    } else if (!config.includes('[features]')) {
-      writeFileSync(configPath, config.trimEnd() + '\n\n' + FEATURE_FLAG_TOML, 'utf-8');
-    } else if (!config.includes('hooks = true')) {
-      const updated = config.replace('[features]', '[features]\nhooks = true');
-      writeFileSync(configPath, updated, 'utf-8');
-    }
+      // 用逐行 + 去注释方式匹配 hooks 值（兼容 # 行尾注释）
+      const hookVal = readHooksValue(config);
+      if (hookVal === 'true') {
+        // 已启用，无需操作
+      } else if (hookVal === 'false') {
+        // hooks = false → hooks = true，保留行尾注释
+        const configLines = config.split('\n').map(line => {
+          const stripped = stripTomlComments(line).trim();
+          if (stripped.match(/^hooks\s*=\s*false$/)) {
+            const hashIdx = line.indexOf('#');
+            const comment = hashIdx >= 0 ? ' ' + line.slice(hashIdx).trim() : '';
+            return `hooks = true${comment}`;
+          }
+          return line;
+        });
+        writeFileSync(configPath, configLines.join('\n'), 'utf-8');
+      } else if (!config.includes('[features]')) {
+        writeFileSync(configPath, config.trimEnd() + '\n\n' + FEATURE_FLAG_TOML, 'utf-8');
+      } else {
+        const updated = config.replace('[features]', '[features]\nhooks = true');
+        writeFileSync(configPath, updated, 'utf-8');
+      }
   } else {
     // 新建 config.toml，原始未设置任何 hooks 值
     writeMeta(codexDir, null, false);
@@ -116,7 +149,10 @@ export function uninstallCodexHooks(codexDir) {
         const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
         if (meta.originalHooksValue === null) {
           // 原始未设置 hooks：移除 agentcfg 添加的 hooks = true
-          config = config.replace(/^hooks\s*=\s*true\s*$/m, '');
+          config = config.split('\n').filter(line => {
+            const stripped = stripTomlComments(line).trim();
+            return !stripped.match(/^hooks\s*=\s*true$/);
+          }).join('\n');
           // 原始没有 [features] 段：连同 agentcfg 添加的整段都拆掉
           if (meta.hadFeaturesSection === false) {
             config = config.replace(/# agentcfg:[^\n]*\n\[features\]\nhooks\s*=\s*true\n?/g, '');
@@ -125,16 +161,40 @@ export function uninstallCodexHooks(codexDir) {
           config = config.replace(/\n{3,}/g, '\n\n');
         } else {
           // 还原为原始值（true/false）
-          config = config.replace(/^hooks\s*=\s*true\s*$/m, `hooks = ${meta.originalHooksValue}`);
+          config = config.split('\n').map(line => {
+            const stripped = stripTomlComments(line).trim();
+            if (stripped.match(/^hooks\s*=\s*true$/)) {
+              const hashIdx = line.indexOf('#');
+              const comment = hashIdx >= 0 ? ' ' + line.slice(hashIdx).trim() : '';
+              return `hooks = ${meta.originalHooksValue}${comment}`;
+            }
+            return line;
+          }).join('\n');
         }
         rmSync(metaPath);
       } catch {
         // 元数据损坏时保守处理：恢复为 hooks = false
-        config = config.replace(/^hooks\s*=\s*true\s*$/m, 'hooks = false');
+        config = config.split('\n').map(line => {
+          const stripped = stripTomlComments(line).trim();
+          if (stripped.match(/^hooks\s*=\s*true$/)) {
+            const hashIdx = line.indexOf('#');
+            const comment = hashIdx >= 0 ? ' ' + line.slice(hashIdx).trim() : '';
+            return 'hooks = false' + comment;
+          }
+          return line;
+        }).join('\n');
       }
     } else {
       // 无元数据（旧版本安装）：保守关闭
-      config = config.replace(/^hooks\s*=\s*true$/m, 'hooks = false');
+      config = config.split('\n').map(line => {
+          const stripped = stripTomlComments(line).trim();
+          if (stripped.match(/^hooks\s*=\s*true$/)) {
+            const hashIdx = line.indexOf('#');
+            const comment = hashIdx >= 0 ? ' ' + line.slice(hashIdx).trim() : '';
+            return 'hooks = false' + comment;
+          }
+          return line;
+        }).join('\n');
     }
     writeFileSync(configPath, config, 'utf-8');
   }

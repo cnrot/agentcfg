@@ -59,7 +59,8 @@ export function squashOldHistory({ cwd, daysThreshold = 90 }) {
           cwd, encoding: 'utf-8',
         });
         const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-        execFileSync('git', ['branch', '-m', 'backup-before-squash', `backup-before-squash.${ts}`], {
+        // 使用 -M（force）覆盖已存在的时间戳同名分支，避免同一秒内两次 squash 冲突
+        execFileSync('git', ['branch', '-M', 'backup-before-squash', `backup-before-squash.${ts}`], {
           cwd,
         });
       } catch { /* 不存在旧 backup 分支 */ }
@@ -100,9 +101,9 @@ export function squashOldHistory({ cwd, daysThreshold = 90 }) {
         execFileSync('git', ['rev-parse', '--verify', 'backup-before-squash'], {
           cwd, encoding: 'utf-8',
         });
-        // 旧 backup 分支存在，重命名保留
+        // 旧 backup 分支存在，重命名保留（-M 避免同一秒内两次 squash 冲突）
         const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-        execFileSync('git', ['branch', '-m', 'backup-before-squash', `backup-before-squash.${ts}`], {
+        execFileSync('git', ['branch', '-M', 'backup-before-squash', `backup-before-squash.${ts}`], {
           cwd,
         });
       } catch { /* 不存在旧 backup 分支，正常创建 */ }

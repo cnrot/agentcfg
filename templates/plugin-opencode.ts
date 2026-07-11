@@ -15,11 +15,11 @@ export const ConfigMgrPlugin: Plugin = async (ctx) => {
   return {
     "tool.execute.before": async ({ tool }) => {
       const safeTool = shellQuote(tool);
-      await ctx.$`cd ${safeDir} && git add . && git diff --cached --quiet || git commit -m "auto: snapshot before ${safeTool}"`;
+      await ctx.$`cd ${safeDir} && git add . && git diff --cached --quiet || git -c user.name=agentcfg -c user.email=agentcfg@local commit --no-verify --no-gpg-sign -m "auto: snapshot before ${safeTool}"`;
     },
     "file.edited": async ({ filePath }) => {
       const safeFile = shellQuote(filePath);
-      await ctx.$`cd ${safeDir} && git add . && git diff --cached --quiet || git commit -m "auto: snapshot after edit ${safeFile}"`;
+      await ctx.$`cd ${safeDir} && git add . && git diff --cached --quiet || git -c user.name=agentcfg -c user.email=agentcfg@local commit --no-verify --no-gpg-sign -m "auto: snapshot after edit ${safeFile}"`;
     },
   };
 };
