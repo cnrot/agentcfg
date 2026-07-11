@@ -15,7 +15,7 @@
 
 `agentcfg`是一个基于 Git 的版本控制，专门管理 AI 编程 Agent（Claude Code / Cursor / Codex CLI / OpenCode）的配置文件。每次配置文件被修改前，hooks 自动触发 `git commit` 创建快照；用户通过对话式 [`SKILL.md`](SKILL.md) AI agent 完成历史查看与三段式比对恢复。
 
-## 为什么需要 agentcfg
+### 为什么需要 agentcfg
 
 | 对比 | 手动 `git init` | agentcfg |
 |---|---|---|
@@ -27,7 +27,7 @@
 | 跨平台（Win/Linux） | 各写一份 | ✅ `execFileSync` 防注入 |
 | AI 帮你恢复 | 自己读 git log | ✅ `SKILL.md` 引导对话式恢复 |
 
-## 支持的 Agent 
+### 支持的 Agent 
 
 |  | hook 事件 | 备注 |
 |---|---|---|
@@ -85,7 +85,7 @@ agentcfg uninstall           # 卸载
 
 每个命令支持 `--help` 查看详细用法。
 
-## WebUI 仪表板(可选)
+### WebUI 仪表板(可选)
 
 ```bash
 cd ~/.claude       # 或任意 agentcfg 已 init 的目录
@@ -131,10 +131,6 @@ agentcfg ui --port 8080 --open   # 自定义端口 + 自动开浏览器
 
 详细流程见 [`SKILL.md`](SKILL.md)
 
-## Contributing
-
-- 报告 bug / 提需求：[GitHub Issues](../../issues)
-
 ## 卸载
 
 ```bash
@@ -148,6 +144,10 @@ agentcfg uninstall
 ```
 
 详细手动清理步骤见 [`UNINSTALL.md`](UNINSTALL.md)。
+
+## Contributing
+
+- 报告 bug / 提需求：[GitHub Issues](../../issues)
 
 ## License
 
