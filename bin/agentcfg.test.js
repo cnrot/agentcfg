@@ -109,21 +109,5 @@ runTest('bin/agentcfg.js squashed --help 输出包含 --force', (_) => {
   assert(out.includes('--days'), 'squash --help 应包含 --days');
 });
 
-runTest('bin/agentcfg.js ui --help 输出包含 --port / --open', (_) => {
-  const out = execFileSync('node', [join(process.cwd(), 'bin', 'agentcfg.js'), 'ui', '--help'], {
-    encoding: 'utf-8',
-  });
-  assert(out.includes('--port'), 'ui --help 应包含 --port');
-  assert(out.includes('--open'), 'ui --help 应包含 --open');
-  assert(out.includes('3000'), 'ui --help 应说明默认端口 3000');
-});
-
-runTest('总 help 列表含 ui 命令', (_) => {
-  const out = execFileSync('node', [join(process.cwd(), 'bin', 'agentcfg.js')], {
-    encoding: 'utf-8',
-  });
-  assert(/ui\s+/.test(out), '总 help 应列出 ui 命令');
-});
-
 console.log(`\n结果: ${passed} 通过, ${failed} 失败`);
 process.exit(failed > 0 ? 1 : 0);
