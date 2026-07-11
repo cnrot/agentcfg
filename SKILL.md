@@ -276,6 +276,28 @@ du -sh ~/__AGENT_DIR__/.git
 Get-ChildItem ~/__AGENT_DIR__/.git -Recurse | Measure-Object -Property Length -Sum
 ```
 
+### 4.1 用 WebUI 仪表板看历史
+
+当用户想"看走势 / 看图表 / 用浏览器"时，引导使用 `agentcfg ui` 启动内置仪表板：
+
+```bash
+cd ~/__AGENT_DIR__    # 任意 agentcfg init 过的目录
+agentcfg ui           # 默认监听 127.0.0.1:3000,浏览器打开 http://127.0.0.1:3000
+agentcfg ui --port 8080 --open   # 自定义端口 + 自动开浏览器
+```
+
+仪表板功能：4 张统计卡片、走势 Canvas（日提交量 + 3 日均线）、TOP 10 高频文件排行、时间线（分页 / 搜索 / Ctrl+点对比 / diff 高亮）、双主题 + 中英双语。
+
+数据通过以下 3 个 GET API 拉取（全部只读，不改 git）：
+
+| 端点 | 作用 |
+|---|---|
+| `GET /api/stats` | 聚合数据（总 commit / 文件数 / 每日活动 / 高频文件） |
+| `GET /api/log?skip=0&limit=20` | 分页 commit 列表 + 每个 commit 的文件清单 |
+| `GET /api/diff?hash=<8位>` | 单 commit 的 per-file 结构化 diff |
+
+如果 `/api/*` 返回 503，提示用户先在当前目录执行 `agentcfg init`。
+
 ---
 
 ## 5. 故障排查

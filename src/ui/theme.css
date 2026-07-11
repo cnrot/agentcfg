@@ -1,0 +1,74 @@
+/* agentcfg UI 主题变量 — 可独立维护的设计 token */
+/* 浅色:Warm Ivory 暖白 */
+:root {
+  --bg-primary: #faf6f2;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-elevated: #f5f0ea;
+  --border-color: #e8e0d8;
+  --border-light: #ddd5cc;
+  --text-primary: #1c1917;
+  --text-secondary: #787168;
+  --text-muted: #a8a29e;
+  --primary: #ea580c;
+  --primary-hover: #c2410c;
+  --primary-glow: rgba(234, 88, 12, 0.15);
+  --accent: #b45309;
+  --accent-gold: #d97706;
+  --chart-line: #ea580c;
+  --chart-fill-start: rgba(234, 88, 12, 0.18);
+  --chart-fill-end: rgba(234, 88, 12, 0.0);
+  --chart-crosshair: #d6cdc4;
+  --chart-glow: rgba(234, 88, 12, 0.5);
+  --dot-inner: #ffffff;
+  --destructive: #DC2626;
+  --success: #16a34a;
+  --tag-bg: #f5f0ea;
+  --tag-border: #e8e0d8;
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.04);
+  --shadow-hover: 0 8px 24px rgba(0,0,0,0.06);
+  --nav-bg: #ffffff;
+  --ranking-bar-bg: #ede7e0;
+  --logo-from: #ea580c;
+  --logo-to: #d97706;
+  --scrollbar-bg: #e8e0d8;
+  --scrollbar-thumb: #c4b8ae;
+  --diff-bg: #f8f4ef;
+}
+
+/* 暗色:Ember Black 烬黑 */
+[data-theme="dark"] {
+  --bg-primary: #080606;
+  --bg-surface: #140e0e;
+  --bg-card: #1a1111;
+  --bg-elevated: #221818;
+  --border-color: #2a1a1a;
+  --border-light: #3a2828;
+  --text-primary: #f0e0d0;
+  --text-secondary: #a08888;
+  --text-muted: #6b5050;
+  --primary: #F97316;
+  --primary-hover: #ea580c;
+  --primary-glow: rgba(249, 115, 22, 0.2);
+  --accent: #FBBF24;
+  --accent-gold: #F59E0B;
+  --chart-line: #F97316;
+  --chart-fill-start: rgba(249, 115, 22, 0.2);
+  --chart-fill-end: rgba(249, 115, 22, 0.0);
+  --chart-crosshair: #3a2828;
+  --chart-glow: rgba(249, 115, 22, 0.6);
+  --dot-inner: #ffffff;
+  --destructive: #EF4444;
+  --success: #22C55E;
+  --tag-bg: #221818;
+  --tag-border: #2a1a1a;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-hover: 0 8px 24px rgba(0,0,0,0.4);
+  --nav-bg: #140e0e;
+  --ranking-bar-bg: #2a1a1a;
+  --logo-from: #F97316;
+  --logo-to: #FBBF24;
+  --scrollbar-bg: #1a1111;
+  --scrollbar-thumb: #3a2828;
+  --diff-bg: #0f0808;
+}

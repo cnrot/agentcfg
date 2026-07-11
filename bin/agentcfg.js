@@ -237,6 +237,10 @@ const commands = {
       }
     }
   },
+  ui: async () => {
+    const { default: server } = await import('../src/ui/server.js');
+    await server.start(args);
+  },
 };
 
 if (command === '--help' || command === '-h' || !command) {
@@ -264,6 +268,7 @@ function printHelp() {
   console.log('  log [<file>] [--count N]  查看历史（默认最近 10 条）');
   console.log('  diff <file> <hash>        生成三段式比对报告');
   console.log('  status                    查看各 agent 工作区状态');
+  console.log('  ui [--port N] [--host H] [--open]  启动 WebUI 仪表板（默认 127.0.0.1:3000）');
   console.log('');
   console.log('示例:');
   console.log('  agentcfg verify --uninstall   预览卸载影响');
