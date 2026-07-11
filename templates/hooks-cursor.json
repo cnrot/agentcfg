@@ -3,12 +3,12 @@
   "hooks": {
     "beforeShellExecution": [
       {
-        "command": "__COMMIT_SCRIPT__ --source pre_shell --tool Bash"
+        "command": "node __COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source pre_shell --tool Bash"
       }
     ],
     "afterFileEdit": [
       {
-        "command": "__COMMIT_SCRIPT__ --source post_edit --tool Edit"
+        "command": "node __COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source post_edit --tool Edit"
       }
     ]
   }

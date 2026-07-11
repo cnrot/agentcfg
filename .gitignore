@@ -1,11 +1,8 @@
 node_modules/
 *.log
-
-# 开发过程产物（SDD methodology 元数据）
 .superpowers/
-docs/superpowers/
-docs/reviews/
-docs/sdd/
-
-# 构建产物
+.codebase-memory/
+docs/
 *.tgz
+CLAUDE.md
+CLAUDE.md

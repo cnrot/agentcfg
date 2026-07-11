@@ -58,12 +58,13 @@ export function commit({ cwd, source = 'hook', toolName = 'unknown' }) {
 // 用 import.meta.url 与 process.argv[1] 比较（兼容符号链接、Windows 路径变体）
 const argvFile = process.argv[1] ? pathToFileURL(process.argv[1]).href : '';
 if (argvFile && argvFile === import.meta.url) {
-  const cwd = process.cwd();
+  let cwd = process.cwd();
   let source = 'hook';
   let toolName = 'unknown';
   for (let i = 2; i < process.argv.length; i++) {
-    if (process.argv[i] === '--source') source = process.argv[++i] || source;
-    if (process.argv[i] === '--tool') toolName = process.argv[++i] || toolName;
+    if (process.argv[i] === '--dir') cwd = process.argv[++i] || cwd;
+    else if (process.argv[i] === '--source') source = process.argv[++i] || source;
+    else if (process.argv[i] === '--tool') toolName = process.argv[++i] || toolName;
   }
   const result = commit({ cwd, source, toolName });
   console.log(result.message);

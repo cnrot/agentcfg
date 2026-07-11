@@ -22,9 +22,11 @@ export function installClaudeHooks(claudeDir, commitScriptPath) {
   const templatePath = join(TEMPLATE_DIR, 'hooks-claude.json');
   const template = JSON.parse(readFileSync(templatePath, 'utf-8'));
   // 转义 Windows 路径中的反斜杠，避免 JSON.parse 失败
-  const escapedPath = commitScriptPath.replace(/\\/g, '\\\\');
+  const escapedPath = commitScriptPath.replace(/\\/g, '/');
+  const escapedDir = claudeDir.replace(/\\/g, '/');
   const hookConfig = JSON.parse(
     JSON.stringify(template).replaceAll('__COMMIT_SCRIPT__', escapedPath)
+      .replaceAll('__CONFIG_DIR__', escapedDir)
   );
   settings.hooks = settings.hooks || {};
   settings.hooks.PreToolUse = [

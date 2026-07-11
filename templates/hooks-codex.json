@@ -2,14 +2,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "__COMMIT_SCRIPT__ --source pre_tool --tool Bash",
-            "statusMessage": "agentcfg: snapshotting"
-          }
-        ]
+        "command": "node __COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source pre_tool --tool Bash"
       }
     ]
   }

@@ -91,12 +91,12 @@ function checkHookRegistration(agentType, agentDir) {
     if (agentType === 'codex') {
       const hooks = JSON.parse(readFileSync(join(agentDir, 'hooks.json'), 'utf-8'));
       const hasHook = hooks.hooks?.PreToolUse?.some(e =>
-        e.hooks?.some(h => h.command?.includes('commit.js'))
+        e.command?.includes('commit.js')
       );
       let featureOk = false;
       try {
         const toml = readFileSync(join(agentDir, 'config.toml'), 'utf-8');
-        featureOk = /^\[features\]\s*$/m.test(toml) && /^hooks\s*=\s*true\s*$/m.test(toml);
+        featureOk = /^\[features\]\s*$/m.test(toml) && /^codex_hooks\s*=\s*true\s*$/m.test(toml);
       } catch { /* */ }
       return {
         label: `${agentType}: hook + feature flag`,
@@ -177,7 +177,7 @@ export function previewUninstall() {
           if (meta.originalHooksValue === null) {
             dirActions.push('从 config.toml 移除 agentcfg 添加的 [features] 段');
           } else {
-            dirActions.push(`还原 config.toml hooks = ${meta.originalHooksValue}`);
+            dirActions.push(`还原 config.toml codex_hooks = ${meta.originalHooksValue}`);
           }
           dirActions.push('删除元数据文件 config.toml.agentcfg-meta');
         } catch { /* */ }

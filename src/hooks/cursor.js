@@ -22,8 +22,10 @@ export function installCursorHooks(cursorDir, commitScriptPath) {
   }
   const templatePath = join(TEMPLATE_DIR, 'hooks-cursor.json');
   let templateStr = readFileSync(templatePath, 'utf-8');
-  const escapedPath = commitScriptPath.replace(/\\/g, '\\\\');
-  templateStr = templateStr.replaceAll('__COMMIT_SCRIPT__', escapedPath);
+  const escapedPath = commitScriptPath.replace(/\\/g, '/');
+  const escapedDir = cursorDir.replace(/\\/g, '/');
+  templateStr = templateStr.replaceAll('__COMMIT_SCRIPT__', escapedPath)
+    .replaceAll('__CONFIG_DIR__', escapedDir);
   const newHooks = JSON.parse(templateStr);
   // 合并：保留用户已有 hooks，追加 agentcfg 条目
   const merged = {

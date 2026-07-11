@@ -7,17 +7,17 @@ const TEMPLATE_DIR = join(__dirname, '../../templates');
 
 const FEATURE_FLAG_TOML = `# agentcfg: 启用 hooks 支持（由 agentcfg 自动添加）
 [features]
-hooks = true
+codex_hooks = true
 `;
 
 const META_FILENAME = 'config.toml.agentcfg-meta';
 
 /**
- * 解析 config.toml 中现有的 hooks 值
+ * 解析 config.toml 中现有的 codex_hooks 值
  * @returns {string|null} 'true' / 'false' / null（未设置）
  */
 function readHooksValue(configText) {
-  const m = configText.match(/^hooks\s*=\s*(true|false)\s*$/m);
+  const m = configText.match(/^codex_hooks\s*=\s*(true|false)\s*$/m);
   return m ? m[1] : null;
 }
 
@@ -37,14 +37,16 @@ export function installCodexHooks(codexDir, commitScriptPath) {
   if (existsSync(hooksPath)) {
     const existing = JSON.parse(readFileSync(hooksPath, 'utf-8'));
     if (existing.hooks?.PreToolUse?.some(e =>
-      e.hooks?.some(h => h.command?.includes('commit.js'))
+      e.command?.includes('commit.js')
     )) {
       return { installed: false, message: 'agentcfg hooks 已注册，跳过' };
     }
   }
   const template = readFileSync(join(TEMPLATE_DIR, 'hooks-codex.json'), 'utf-8');
-  const escapedPath = commitScriptPath.replace(/\\/g, '\\\\');
-  const filled = template.replaceAll('__COMMIT_SCRIPT__', escapedPath);
+  const escapedPath = commitScriptPath.replace(/\\/g, '/');
+  const escapedDir = codexDir.replace(/\\/g, '/');
+  const filled = template.replaceAll('__COMMIT_SCRIPT__', escapedPath)
+    .replaceAll('__CONFIG_DIR__', escapedDir);
   // 备份 hooks.json（如果已存在）
   if (existsSync(hooksPath)) {
     writeFileSync(hooksPath + '.bak.agentcfg', readFileSync(hooksPath, 'utf-8'), 'utf-8');
@@ -63,12 +65,12 @@ export function installCodexHooks(codexDir, commitScriptPath) {
     const hadFeaturesSection = /^\[features\]\s*$/m.test(config);
     writeMeta(codexDir, originalHooksValue, hadFeaturesSection);
 
-    if (/^hooks\s*=\s*false\s*$/m.test(config)) {
-      writeFileSync(configPath, config.replace(/^hooks\s*=\s*false\s*$/m, 'hooks = true'), 'utf-8');
+    if (/^codex_hooks\s*=\s*false\s*$/m.test(config)) {
+      writeFileSync(configPath, config.replace(/^codex_hooks\s*=\s*false\s*$/m, 'codex_hooks = true'), 'utf-8');
     } else if (!config.includes('[features]')) {
       writeFileSync(configPath, config.trimEnd() + '\n\n' + FEATURE_FLAG_TOML, 'utf-8');
-    } else if (!config.includes('hooks = true')) {
-      const updated = config.replace('[features]', '[features]\nhooks = true');
+    } else if (!config.includes('codex_hooks = true')) {
+      const updated = config.replace('[features]', '[features]\ncodex_hooks = true');
       writeFileSync(configPath, updated, 'utf-8');
     }
   } else {
@@ -87,7 +89,7 @@ export function uninstallCodexHooks(codexDir) {
     const hooks = JSON.parse(content);
     if (hooks.hooks?.PreToolUse) {
       hooks.hooks.PreToolUse = hooks.hooks.PreToolUse.filter(e =>
-        !e.hooks?.some(h => h.command?.includes('commit.js'))
+        !e.command?.includes('commit.js')
       );
     }
     writeFileSync(hooksPath, JSON.stringify(hooks, null, 2) + '\n', 'utf-8');
@@ -101,20 +103,20 @@ export function uninstallCodexHooks(codexDir) {
       try {
         const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
         if (meta.originalHooksValue === null) {
-          // 原始未设置 → 移除 agentcfg 添加的 hooks = true
-          config = config.replace(/^hooks\s*=\s*true\s*$/m, '').replace(/\n{3,}/g, '\n\n');
+          // 原始未设置 → 移除 agentcfg 添加的 codex_hooks = true
+          config = config.replace(/^codex_hooks\s*=\s*true\s*$/m, '').replace(/\n{3,}/g, '\n\n');
         } else {
           // 还原为原始值（true/false）
-          config = config.replace(/^hooks\s*=\s*true\s*$/m, `hooks = ${meta.originalHooksValue}`);
+          config = config.replace(/^codex_hooks\s*=\s*true\s*$/m, `codex_hooks = ${meta.originalHooksValue}`);
         }
         rmSync(metaPath);
       } catch {
-        // 元数据损坏时保守处理：恢复为 hooks = false
-        config = config.replace(/^hooks\s*=\s*true\s*$/m, 'hooks = false');
+        // 元数据损坏时保守处理：恢复为 codex_hooks = false
+        config = config.replace(/^codex_hooks\s*=\s*true\s*$/m, 'codex_hooks = false');
       }
     } else {
       // 无元数据（旧版本安装）：保守关闭
-      config = config.replace(/^hooks\s*=\s*true$/m, 'hooks = false');
+      config = config.replace(/^codex_hooks\s*=\s*true$/m, 'codex_hooks = false');
     }
     writeFileSync(configPath, config, 'utf-8');
   }
