@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "17bbf43bef30e63fab5f8d57528f859b32230d11",
+    "indexed_at": "2026-07-11T15:57:28Z",
+    "project": "G-github-agentcfg",
+    "nodes": 304,
+    "edges": 529,
+    "original_size": 2162688,
+    "compressed_size": 212661,
+    "compression_level": 3
+}
