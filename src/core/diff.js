@@ -30,6 +30,19 @@ export function generateDiffReport({ cwd, hash, filePath }) {
     const diffOutput = execFileSync('git', ['diff', hash, '--', filePath], {
       cwd, encoding: 'utf-8',
     });
+    if (!diffOutput.trim()) {
+      return [
+        '┌────────────────────────────────────────',
+        `│ 恢复比对报告`,
+        `├─ Commit: ${commitInfo}`,
+        `├─ 文件: ${filePath}`,
+        '│',
+        '├─ ✅ 两版本完全相同，无差异',
+        `│   历史版本与当前版本一致（commit ${hash.slice(0, 8)}）`,
+        '│',
+        '└────────────────────────────────────────',
+      ].join('\n');
+    }
     const lines = diffOutput.split('\n');
     added = lines.filter(l => l.startsWith('+') && !l.startsWith('+++')).map(l => l.slice(1)).join('\n') || '（无新增行）';
     removed = lines.filter(l => l.startsWith('-') && !l.startsWith('---')).map(l => l.slice(1)).join('\n') || '（无移除行）';

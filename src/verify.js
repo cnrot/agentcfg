@@ -201,7 +201,7 @@ export function previewUninstall() {
       if (existsSync(join(dir, name))) backupFiles.push(name);
     }
     if (backupFiles.length > 0) {
-      dirActions.push(`保留备份文件: ${backupFiles.join(', ')}（不会自动删除）`);
+      dirActions.push(`删除备份文件: ${backupFiles.join(', ')}`);
     }
 
     // .git 目录

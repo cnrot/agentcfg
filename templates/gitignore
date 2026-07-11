@@ -12,6 +12,7 @@ shell-snapshots/
 # 会话缓存
 sessions/
 session-env/
+tasks/
 
 # 插件缓存
 plugins/cache/
@@ -20,3 +21,6 @@ plugins/cache/
 stats-cache.json
 desktop-server-state.json
 *.bak.*
+
+# 命令执行残留
+console.log*
