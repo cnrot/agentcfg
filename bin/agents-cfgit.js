@@ -231,10 +231,12 @@ const commands = {
   },
   ui: async () => {
     if (args.includes('--help') || args.includes('-h')) {
-      console.log('用法: agents-cfgit ui [--port N] [--host H] [--open]');
+      console.log('用法: agents-cfgit ui [--port N] [--host H] [--open] [--kill] [--stop]');
       console.log('  --port N     监听端口（默认 3000）');
       console.log('  --host H     监听地址（默认 127.0.0.1；局域网访问用 0.0.0.0）');
       console.log('  --open       启动后自动调用系统默认浏览器');
+      console.log('  --kill       启动前自动释放端口');
+      console.log('  --stop       关闭端口上的 WebUI 实例');
       return;
     }
     const { default: server } = await import('../src/ui/server.js');
@@ -266,7 +268,7 @@ function printHelp() {
   console.log('  log [<file>] [--count N]  查看历史（默认最近 10 条）');
   console.log('  diff <file> <hash>        生成三段式比对报告');
   console.log('  status                    查看各 agent 工作区状态');
-  console.log('  ui [--port N] [--host H] [--open]  启动 WebUI 仪表板（默认 127.0.0.1:3000）');
+  console.log('  ui [--port N] [--host H] [--open] [--kill] [--stop]  启动 WebUI 仪表板（默认 127.0.0.1:3000）');
   console.log('');
   console.log('示例:');
   console.log('  agents-cfgit verify --uninstall   预览卸载影响');

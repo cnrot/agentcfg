@@ -1,4 +1,4 @@
-# agentcfg: 临时文件和缓存排除
+# agents-cfgit: 临时文件和缓存排除
 # 已追踪文件不受 gitignore 影响
 
 # 旧备份体系（废弃）

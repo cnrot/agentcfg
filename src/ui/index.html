@@ -8,7 +8,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Agentcfg Dashboard</title>
+<title>Agents-cfgit Dashboard</title>
 
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='url(%23g)'/><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23fbbf24'/><stop offset='100%25' stop-color='%23d97706'/></linearGradient></defs><text x='16' y='22' text-anchor='middle' fill='white' font-family='monospace' font-weight='700' font-size='16'>Ac</text></svg>">
 
@@ -116,6 +116,24 @@ body{font-family:'Fira Sans',sans-serif;background:var(--bg-primary);color:var(-
 .filter-reset:hover{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 0 12px var(--primary-glow);transform:scale(1.05)}
 
 .filter-reset:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+.error-banner{display:none;margin-bottom:20px;border-radius:10px;padding:14px 18px;background:var(--bg-card);border:1px solid var(--destructive);box-shadow:0 0 20px rgba(220,38,38,0.1)}
+.error-banner.show{display:block}
+.error-content{display:flex;align-items:center;gap:12px}
+.error-icon{font-size:18px;flex-shrink:0;color:var(--destructive)}
+.error-message{flex:1;font-size:13px;line-height:1.5;color:var(--text-primary)}
+.error-message .highlight{color:var(--primary);font-weight:500}
+.error-retry{flex-shrink:0;padding:6px 16px;border:none;border-radius:6px;background:var(--primary);color:#fff;cursor:pointer;font-size:13px;font-family:inherit;transition:box-shadow .2s}
+.error-retry:hover{box-shadow:0 0 12px var(--primary-glow)}
+.error-dismiss{flex-shrink:0;padding:0 6px;border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:18px;line-height:1;font-family:inherit}
+.error-dismiss:hover{color:var(--text-primary)}
+
+/* Loading overlay for initial page load */
+.loading-overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg-primary);z-index:100;transition:opacity .4s}
+.loading-overlay.hide{opacity:0;pointer-events:none}
+.loading-spinner{width:32px;height:32px;border:3px solid var(--border-color);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
+.loading-text{font-size:14px;color:var(--text-muted);font-family:'Fira Sans',sans-serif}
+.loading-error{font-size:13px;color:var(--destructive);margin-top:8px;max-width:400px;text-align:center;line-height:1.5}
 
 
 
@@ -402,7 +420,12 @@ body{font-family:'Fira Sans',sans-serif;background:var(--bg-primary);color:var(-
 
 <body>
 
-
+<!-- Loading overlay for initial page load -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">加载数据中…</div>
+  <div class="loading-error" id="loadingError"></div>
+</div>
 
 <div class="app-container">
 
@@ -412,7 +435,7 @@ body{font-family:'Fira Sans',sans-serif;background:var(--bg-primary);color:var(-
 
       <div class="logo-icon">ac</div>
 
-      <h1>Agentcfg <span>Dashboard</span></h1>
+      <h1>Agents-cfgit <span>Dashboard</span></h1>
 
     </div>
 
@@ -446,7 +469,15 @@ body{font-family:'Fira Sans',sans-serif;background:var(--bg-primary);color:var(-
 
   </header>
 
-
+  <!-- Error banner -->
+  <div class="error-banner" id="errorBanner">
+    <div class="error-content">
+      <span class="error-icon">⚠</span>
+      <div class="error-message" id="errorMessage"></div>
+      <button class="error-retry" id="errorRetry">重试</button>
+      <button class="error-dismiss" id="errorDismiss">✕</button>
+    </div>
+  </div>
 
   <!-- ===== Dashboard ===== -->
 
@@ -841,22 +872,52 @@ let tlSearchTerm = '';
 
 // ---- API helpers ----
 
-async function apiStats() {
-  const r = await fetch('/api/stats');
-  if (!r.ok) throw new Error('stats ' + r.status);
+async function apiFetch(url) {
+  const r = await fetch(url);
+  if (!r.ok) {
+    const body = await r.json().catch(() => ({}));
+    const err = new Error(body.message || url + ' ' + r.status);
+    err.code = body.error || 'UNKNOWN';
+    throw err;
+  }
   return r.json();
 }
 
-async function apiLog(skip, limit) {
-  const r = await fetch(`/api/log?skip=${skip}&limit=${limit}`);
-  if (!r.ok) throw new Error('log ' + r.status);
-  return r.json();
+async function apiStats() { return apiFetch('/api/stats'); }
+
+async function apiLog(skip, limit) { return apiFetch(`/api/log?skip=${skip}&limit=${limit}`); }
+
+async function apiDiff(hash) { return apiFetch(`/api/diff?hash=${encodeURIComponent(hash)}`); }
+
+function showGlobalError(msg, isFatal) {
+  const banner = document.getElementById('errorBanner');
+  const msgEl = document.getElementById('errorMessage');
+  msgEl.innerHTML = msg;
+  banner.classList.add('show');
+
+  // On fatal errors, update the loading overlay too
+  if (isFatal) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay && !overlay.classList.contains('hide')) {
+      document.getElementById('loadingText').textContent = '启动失败';
+      document.getElementById('loadingError').textContent = msg.replace(/<[^>]*>/g, '');
+    }
+  }
 }
 
-async function apiDiff(hash) {
-  const r = await fetch(`/api/diff?hash=${encodeURIComponent(hash)}`);
-  if (!r.ok) throw new Error('diff ' + r.status);
-  return r.json();
+function hideGlobalError() {
+  document.getElementById('errorBanner').classList.remove('show');
+}
+
+function showApiError(msg) {
+  const loader = document.getElementById('timelineLoader');
+  if (loader) loader.innerHTML = '<span style="color:var(--destructive)">⚠ ' + msg + '</span>';
+  showGlobalError(msg, false);
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) overlay.classList.add('hide');
 }
 
 async function loadStats() {
@@ -865,6 +926,7 @@ async function loadStats() {
     dailyActivity = data.dailyActivity || [];
     fileRanking = data.fileRanking || [];
     statsLoaded = true;
+    hideLoadingOverlay();
     if (typeof applyFilter === 'function') applyFilter();
     else if (typeof drawChart === 'function') drawChart();
     if (typeof drawSparklines === 'function') drawSparklines();
@@ -872,7 +934,17 @@ async function loadStats() {
     if (typeof renderRecentPreview === 'function') renderRecentPreview();
   } catch (err) {
     console.error('loadStats failed:', err);
-    showApiError('加载统计失败: ' + err.message);
+    if (err.code === 'NOT_A_GIT_REPO') {
+      showGlobalError(
+        '当前目录不是 agents-cfgit 管理的 git 仓库。<br>' +
+        '请在 <span class="highlight">.claude</span> 或 <span class="highlight">.cursor</span> 等 agent 配置目录下重新启动，<br>' +
+        '或先执行 <code>agents-cfgit init</code> 进行初始化。',
+        true
+      );
+    } else {
+      showApiError('加载统计失败: ' + err.message);
+      hideLoadingOverlay();
+    }
   }
 }
 
@@ -888,9 +960,11 @@ async function loadLogChunk() {
     if (typeof renderTimeline === 'function') renderTimeline(batch, 'timelineList', true);
     if (batch.length < limit) logExhausted = true;
     logLoaded = true;
+    hideLoadingOverlay();
   } catch (err) {
     console.error('loadLog failed:', err);
     showApiError('加载 commit 列表失败: ' + err.message);
+    hideLoadingOverlay();
   } finally {
     tlLoading = false;
     const loader = document.getElementById('timelineLoader');
@@ -915,14 +989,6 @@ async function loadDiff(hash) {
     return [];
   }
 }
-
-function showApiError(msg) {
-  const loader = document.getElementById('timelineLoader');
-  if (loader) loader.innerHTML = `<span style="color:var(--destructive)">⚠ ${msg}</span>`;
-}
-
-
-
 
 // Global filter state (declared at top: 832-840)
 
@@ -1721,6 +1787,8 @@ function applyFilter() {
 
   const e = document.getElementById('filterEnd').value;
 
+  if (dailyActivity.length === 0) return;
+
   const minDate = dailyActivity[0].fullDate;
 
   const maxDate = dailyActivity[dailyActivity.length-1].fullDate;
@@ -2359,6 +2427,13 @@ function renderRecentPreview() {
 loadStats();
 
 loadLogChunk();
+
+// Error banner button wiring
+document.getElementById('errorDismiss').addEventListener('click', hideGlobalError);
+document.getElementById('errorRetry').addEventListener('click', function() {
+  hideGlobalError();
+  location.reload();
+});
 
 
 

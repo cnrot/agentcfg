@@ -1,8 +1,9 @@
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 
 import { getLog } from '../core/log.js';
@@ -33,6 +34,24 @@ export default {
     }
     const opts = parseArgs(args);
     const cwd = process.cwd();
+
+    // --stop: 根据 PID 文件关闭已有进程
+    if (opts.stop) {
+      const pf = pidFilePath(opts.port);
+      try {
+        const pid = parseInt(readFileSync(pf, 'utf-8'), 10);
+        try { process.kill(pid); } catch {}
+        unlinkSync(pf);
+        console.log(`  🛑 已关闭 WebUI (PID ${pid})`);
+      } catch {
+        console.log(`  ℹ️  端口 ${opts.port} 上没有运行中的 WebUI 实例`);
+      }
+      process.exit(0);
+    }
+
+    // --kill: 启动前自动释放旧进程
+    if (opts.kill) killProcessOnPort(opts.port);
+
     const indexPath = join(UI_DIR, 'index.html');
     if (!existsSync(indexPath)) {
       console.error('❌ 找不到 WebUI 资源:', indexPath);
@@ -42,11 +61,18 @@ export default {
 
     const server = createServer((req, res) => handle(req, res, cwd, indexPath));
     await new Promise((resolveListen, reject) => {
-      server.once('error', reject);
+      server.once('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          console.error(`❌ 端口 ${opts.port} 已被占用，请用 --port 指定其他端口`);
+          process.exit(1);
+        }
+        reject(err);
+      });
       server.listen(opts.port, opts.host, () => resolveListen());
     });
 
     const url = `http://${opts.host === '0.0.0.0' ? '127.0.0.1' : opts.host}:${opts.port}`;
+    writePidFile(opts.port);
     console.log('');
     console.log(`  ✅ agents-cfgit WebUI 已启动`);
     console.log(`     ${url}`);
@@ -61,6 +87,7 @@ export default {
     // 优雅关闭
     const shutdown = () => {
       console.log('\n  🛑 关闭 WebUI');
+      cleanPidFile(opts.port);
       server.close(() => process.exit(0));
       setTimeout(() => process.exit(0), 1500).unref();
     };
@@ -76,6 +103,8 @@ function parseArgs(args) {
   let port = 3000;
   let host = '127.0.0.1';
   let open = false;
+  let kill = false;
+  let stop = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--port' && i + 1 < args.length) {
       const v = parseInt(args[++i], 10);
@@ -84,16 +113,22 @@ function parseArgs(args) {
       host = args[++i];
     } else if (args[i] === '--open') {
       open = true;
+    } else if (args[i] === '--kill') {
+      kill = true;
+    } else if (args[i] === '--stop') {
+      stop = true;
     }
   }
-  return { port, host, open };
+  return { port, host, open, kill, stop };
 }
 
 function printHelp() {
-  console.log('用法: agents-cfgit ui [--port N] [--host H] [--open]');
+  console.log('用法: agents-cfgit ui [--port N] [--host H] [--open] [--kill] [--stop]');
   console.log('  --port N     监听端口（默认 3000）');
   console.log('  --host H     监听地址（默认 127.0.0.1；局域网访问用 0.0.0.0）');
   console.log('  --open       启动后自动调用系统默认浏览器');
+  console.log('  --kill       启动前自动释放旧进程（基于 PID 文件或端口检测）');
+  console.log('  --stop       关闭端口上的 WebUI 实例（基于 PID 文件）');
 }
 
 async function handle(req, res, cwd, indexPath) {
@@ -232,6 +267,57 @@ function getCommitFiles(cwd, hash) {
   } catch {
     return [];
   }
+}
+
+// ---- 进程管理 ----
+
+function pidFilePath(port) {
+  return join(tmpdir(), `agents-cfgit-ui-${port}.pid`);
+}
+
+function writePidFile(port) {
+  try { writeFileSync(pidFilePath(port), String(process.pid)); } catch {}
+}
+
+function cleanPidFile(port) {
+  try { unlinkSync(pidFilePath(port)); } catch {}
+}
+
+function killProcessOnPort(port) {
+  // 先试 PID 文件（快速路径）
+  const pf = pidFilePath(port);
+  try {
+    const pid = parseInt(readFileSync(pf, 'utf-8'), 10);
+    try { process.kill(pid); } catch {}
+    try { unlinkSync(pf); } catch {}
+    console.log(`  🧹 已释放端口 ${port} (PID ${pid})`);
+    return;
+  } catch {}
+
+  // 回退:通过系统工具检测端口占用
+  try {
+    if (process.platform === 'win32') {
+      const out = execFileSync('netstat', ['-ano'], { encoding: 'utf-8', timeout: 3000 });
+      for (const line of out.split('\n')) {
+        if (line.includes(`:${port}`) && line.includes('LISTENING')) {
+          const parts = line.trim().split(/\s+/);
+          const pid = parts[parts.length - 1];
+          if (pid && pid !== '0') {
+            execFileSync('taskkill', ['/PID', pid, '/F'], { stdio: 'pipe', timeout: 3000 });
+            console.log(`  🧹 已释放端口 ${port} (PID ${pid})`);
+          }
+        }
+      }
+    } else {
+      const out = execFileSync('lsof', ['-ti', `:${port}`], { encoding: 'utf-8', timeout: 3000 }).trim();
+      if (out) {
+        for (const pid of out.split('\n').filter(Boolean)) {
+          try { process.kill(parseInt(pid, 10), 'SIGTERM'); } catch {}
+        }
+        console.log(`  🧹 已释放端口 ${port}`);
+      }
+    }
+  } catch {}
 }
 
 /**
