@@ -13,12 +13,12 @@ export function installCursorHooks(cursorDir, commitScriptPath) {
     if (existingHooks.hooks?.beforeShellExecution?.some(
       h => h.command?.includes('commit.js')
     )) {
-      return { installed: false, message: 'agentcfg hooks 已注册，跳过' };
+      return { installed: false, message: 'agents-cfgit hooks 已注册，跳过' };
     }
   }
   // 备份原文件
   if (existsSync(hooksPath)) {
-    writeFileSync(hooksPath + '.bak.agentcfg', readFileSync(hooksPath, 'utf-8'), 'utf-8');
+    writeFileSync(hooksPath + '.bak.agents-cfgit', readFileSync(hooksPath, 'utf-8'), 'utf-8');
   }
   const templatePath = join(TEMPLATE_DIR, 'hooks-cursor.json');
   let templateStr = readFileSync(templatePath, 'utf-8');
@@ -27,7 +27,7 @@ export function installCursorHooks(cursorDir, commitScriptPath) {
   templateStr = templateStr.replaceAll('__COMMIT_SCRIPT__', escapedPath)
     .replaceAll('__CONFIG_DIR__', escapedDir);
   const newHooks = JSON.parse(templateStr);
-  // 合并：保留用户已有 hooks，追加 agentcfg 条目
+  // 合并：保留用户已有 hooks，追加 agents-cfgit 条目
   const merged = {
     version: 1,
     hooks: {
@@ -42,7 +42,7 @@ export function installCursorHooks(cursorDir, commitScriptPath) {
     },
   };
   writeFileSync(hooksPath, JSON.stringify(merged, null, 2) + '\n', 'utf-8');
-  return { installed: true, message: 'agentcfg hooks 注册成功' };
+  return { installed: true, message: 'agents-cfgit hooks 注册成功' };
 }
 
 export function uninstallCursorHooks(cursorDir) {
@@ -51,7 +51,7 @@ export function uninstallCursorHooks(cursorDir) {
     return { uninstalled: false, message: 'hooks.json 不存在' };
   }
   const content = readFileSync(hooksPath, 'utf-8');
-  writeFileSync(hooksPath + '.bak.agentcfg', content, 'utf-8');
+  writeFileSync(hooksPath + '.bak.agents-cfgit', content, 'utf-8');
   const hooks = JSON.parse(content);
   if (hooks.hooks?.beforeShellExecution) {
     hooks.hooks.beforeShellExecution = hooks.hooks.beforeShellExecution.filter(
@@ -64,5 +64,5 @@ export function uninstallCursorHooks(cursorDir) {
     );
   }
   writeFileSync(hooksPath, JSON.stringify(hooks, null, 2) + '\n', 'utf-8');
-  return { uninstalled: true, message: 'agentcfg hooks 已移除' };
+  return { uninstalled: true, message: 'agents-cfgit hooks 已移除' };
 }

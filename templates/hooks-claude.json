@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": "node __COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source pre_tool --tool Bash",
-            "statusMessage": "agentcfg: 检测配置文件变更"
+            "statusMessage": "agents-cfgit: 检测配置文件变更"
           }
         ]
       },
@@ -17,7 +17,7 @@
           {
             "type": "command",
             "command": "node __COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source pre_tool --tool Edit",
-            "statusMessage": "agentcfg: 检测配置文件变更"
+            "statusMessage": "agents-cfgit: 检测配置文件变更"
           }
         ]
       },
@@ -27,7 +27,7 @@
           {
             "type": "command",
             "command": "node __COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source pre_tool --tool Write",
-            "statusMessage": "agentcfg: 检测配置文件变更"
+            "statusMessage": "agents-cfgit: 检测配置文件变更"
           }
         ]
       },
@@ -37,7 +37,7 @@
           {
             "type": "command",
             "command": "node __COMMIT_SCRIPT__ --dir __CONFIG_DIR__ --source pre_tool --tool MultiEdit",
-            "statusMessage": "agentcfg: 检测配置文件变更"
+            "statusMessage": "agents-cfgit: 检测配置文件变更"
           }
         ]
       }

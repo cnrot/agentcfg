@@ -15,9 +15,9 @@ export function installClaudeHooks(claudeDir, commitScriptPath) {
   if (settings.hooks?.PreToolUse?.some(h =>
     h.hooks?.some(hk => hk.command?.includes('commit.js'))
   )) {
-    return { installed: false, message: 'agentcfg hooks 已注册，跳过' };
+    return { installed: false, message: 'agents-cfgit hooks 已注册，跳过' };
   }
-  const backupPath = settingsPath + '.bak.agentcfg';
+  const backupPath = settingsPath + '.bak.agents-cfgit';
   copyFileSync(settingsPath, backupPath);
   const templatePath = join(TEMPLATE_DIR, 'hooks-claude.json');
   const template = JSON.parse(readFileSync(templatePath, 'utf-8'));
@@ -34,7 +34,7 @@ export function installClaudeHooks(claudeDir, commitScriptPath) {
     ...hookConfig.hooks.PreToolUse,
   ];
   writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
-  return { installed: true, message: 'agentcfg hooks 注册成功' };
+  return { installed: true, message: 'agents-cfgit hooks 注册成功' };
 }
 
 export function uninstallClaudeHooks(claudeDir) {
@@ -43,13 +43,13 @@ export function uninstallClaudeHooks(claudeDir) {
     return { uninstalled: false, message: 'settings.json 不存在' };
   }
 
-  // 优先从 settings.json 中增量剥离 agentcfg 条目
+  // 优先从 settings.json 中增量剥离 agents-cfgit 条目
   // 这样能保留其他工具注册的 hooks（MCP 等），避免"恢复备份"一刀切
   try {
     const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
     let modified = false;
 
-    // 1. 移除 hooks.PreToolUse 中的 agentcfg 条目
+    // 1. 移除 hooks.PreToolUse 中的 agents-cfgit 条目
     if (settings.hooks?.PreToolUse) {
       const before = settings.hooks.PreToolUse.length;
       settings.hooks.PreToolUse = settings.hooks.PreToolUse.filter(h =>
@@ -60,11 +60,11 @@ export function uninstallClaudeHooks(claudeDir) {
       if (Object.keys(settings.hooks).length === 0) delete settings.hooks;
     }
 
-    // 2. 移除 enabledPlugins 中所有 key 含 "agentcfg" 的条目
+    // 2. 移除 enabledPlugins 中所有 key 含 "agents-cfgit" 的条目
     if (settings.enabledPlugins && typeof settings.enabledPlugins === 'object') {
       const before = Object.keys(settings.enabledPlugins).length;
       for (const key of Object.keys(settings.enabledPlugins)) {
-        if (key.toLowerCase().includes('agentcfg')) {
+        if (key.toLowerCase().includes('agents-cfgit')) {
           delete settings.enabledPlugins[key];
         }
       }
@@ -74,23 +74,23 @@ export function uninstallClaudeHooks(claudeDir) {
       if (Object.keys(settings.enabledPlugins || {}).length !== before) modified = true;
     }
 
-    // 3. 移除 extraKnownMarketplaces 中含 "agentcfg" 的源
+    // 3. 移除 extraKnownMarketplaces 中含 "agents-cfgit" 的源
     // extraKnownMarketplaces 可能是 object（{ "name": { source: {...} } }）或 array（[{source: "..."}]）
     if (Array.isArray(settings.extraKnownMarketplaces)) {
       const before = settings.extraKnownMarketplaces.length;
       settings.extraKnownMarketplaces = settings.extraKnownMarketplaces.filter(m => {
         const source = typeof m === 'string' ? m : (m?.source || '');
-        return !source.toLowerCase().includes('agentcfg');
+        return !source.toLowerCase().includes('agents-cfgit');
       });
       if (settings.extraKnownMarketplaces.length === 0) {
         delete settings.extraKnownMarketplaces;
       }
       if ((settings.extraKnownMarketplaces || []).length !== before) modified = true;
     } else if (settings.extraKnownMarketplaces && typeof settings.extraKnownMarketplaces === 'object') {
-      // object 格式：按 key 名匹配（含 "agentcfg" 子串的 key 整条删除）
+      // object 格式：按 key 名匹配（含 "agents-cfgit" 子串的 key 整条删除）
       const beforeKeys = Object.keys(settings.extraKnownMarketplaces);
       for (const key of beforeKeys) {
-        if (key.toLowerCase().includes('agentcfg')) {
+        if (key.toLowerCase().includes('agents-cfgit')) {
           delete settings.extraKnownMarketplaces[key];
         }
       }
@@ -102,9 +102,9 @@ export function uninstallClaudeHooks(claudeDir) {
 
     if (modified) {
       writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
-      return { uninstalled: true, message: 'agentcfg hooks 已移除（含 enabledPlugins / extraKnownMarketplaces 清理）' };
+      return { uninstalled: true, message: 'agents-cfgit hooks 已移除（含 enabledPlugins / extraKnownMarketplaces 清理）' };
     }
-    return { uninstalled: true, message: 'agentcfg hooks 未找到，无需卸载' };
+    return { uninstalled: true, message: 'agents-cfgit hooks 未找到，无需卸载' };
   } catch {
     // settings.json 损坏时不再盲目从备份恢复
     // 原因：备份后用户可能已编辑过 settings.json，盲目覆盖会丢失用户的修改

@@ -5,12 +5,12 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_DIR = join(__dirname, '../../templates');
 
-const FEATURE_FLAG_TOML = `# agentcfg: 启用 hooks 支持（由 agentcfg 自动添加）
+const FEATURE_FLAG_TOML = `# agents-cfgit: 启用 hooks 支持（由 agents-cfgit 自动添加）
 [features]
 codex_hooks = true
 `;
 
-const META_FILENAME = 'config.toml.agentcfg-meta';
+const META_FILENAME = 'config.toml.agents-cfgit-meta';
 
 /**
  * 解析 config.toml 中现有的 codex_hooks 值
@@ -22,7 +22,7 @@ function readHooksValue(configText) {
 }
 
 /**
- * 写入 agentcfg 元数据，记录安装前的 hooks 状态
+ * 写入 agents-cfgit 元数据，记录安装前的 hooks 状态
  */
 function writeMeta(codexDir, originalHooksValue, hadFeaturesSection) {
   const metaPath = join(codexDir, META_FILENAME);
@@ -39,7 +39,7 @@ export function installCodexHooks(codexDir, commitScriptPath) {
     if (existing.hooks?.PreToolUse?.some(e =>
       e.command?.includes('commit.js')
     )) {
-      return { installed: false, message: 'agentcfg hooks 已注册，跳过' };
+      return { installed: false, message: 'agents-cfgit hooks 已注册，跳过' };
     }
   }
   const template = readFileSync(join(TEMPLATE_DIR, 'hooks-codex.json'), 'utf-8');
@@ -49,14 +49,14 @@ export function installCodexHooks(codexDir, commitScriptPath) {
     .replaceAll('__CONFIG_DIR__', escapedDir);
   // 备份 hooks.json（如果已存在）
   if (existsSync(hooksPath)) {
-    writeFileSync(hooksPath + '.bak.agentcfg', readFileSync(hooksPath, 'utf-8'), 'utf-8');
+    writeFileSync(hooksPath + '.bak.agents-cfgit', readFileSync(hooksPath, 'utf-8'), 'utf-8');
   }
   writeFileSync(hooksPath, filled, 'utf-8');
 
   const configPath = join(codexDir, 'config.toml');
   // 备份原 config.toml
   if (existsSync(configPath)) {
-    writeFileSync(configPath + '.bak.agentcfg', readFileSync(configPath, 'utf-8'), 'utf-8');
+    writeFileSync(configPath + '.bak.agents-cfgit', readFileSync(configPath, 'utf-8'), 'utf-8');
   }
   if (existsSync(configPath)) {
     const config = readFileSync(configPath, 'utf-8');
@@ -78,14 +78,14 @@ export function installCodexHooks(codexDir, commitScriptPath) {
     writeMeta(codexDir, null, false);
     writeFileSync(configPath, FEATURE_FLAG_TOML, 'utf-8');
   }
-  return { installed: true, message: 'agentcfg hooks 注册成功（含 feature flag 开启）' };
+  return { installed: true, message: 'agents-cfgit hooks 注册成功（含 feature flag 开启）' };
 }
 
 export function uninstallCodexHooks(codexDir) {
   const hooksPath = join(codexDir, 'hooks.json');
   if (existsSync(hooksPath)) {
     const content = readFileSync(hooksPath, 'utf-8');
-    writeFileSync(hooksPath + '.bak.agentcfg', readFileSync(hooksPath, 'utf-8'), 'utf-8');
+    writeFileSync(hooksPath + '.bak.agents-cfgit', readFileSync(hooksPath, 'utf-8'), 'utf-8');
     const hooks = JSON.parse(content);
     if (hooks.hooks?.PreToolUse) {
       hooks.hooks.PreToolUse = hooks.hooks.PreToolUse.filter(e =>
@@ -103,7 +103,7 @@ export function uninstallCodexHooks(codexDir) {
       try {
         const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
         if (meta.originalHooksValue === null) {
-          // 原始未设置 → 移除 agentcfg 添加的 codex_hooks = true
+          // 原始未设置 → 移除 agents-cfgit 添加的 codex_hooks = true
           config = config.replace(/^codex_hooks\s*=\s*true\s*$/m, '').replace(/\n{3,}/g, '\n\n');
         } else {
           // 还原为原始值（true/false）
@@ -120,5 +120,5 @@ export function uninstallCodexHooks(codexDir) {
     }
     writeFileSync(configPath, config, 'utf-8');
   }
-  return { uninstalled: true, message: 'agentcfg hooks 已移除' };
+  return { uninstalled: true, message: 'agents-cfgit hooks 已移除' };
 }

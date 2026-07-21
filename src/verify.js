@@ -4,7 +4,7 @@ import { join } from 'path';
 import { detectAgents } from './install.js';
 
 /**
- * 验证指定目录的 agentcfg 安装是否完整
+ * 验证指定目录的 agents-cfgit 安装是否完整
  * @param {string} agentType - claude / cursor / codex / opencode
  * @param {string} agentDir - 配置目录绝对路径
  * @returns {Array<{label: string, ok: boolean, detail: string}>}
@@ -57,7 +57,7 @@ export function verifyAgent(agentType, agentDir) {
   checks.push(hookCheck);
 
   // 5. SKILL.md 安装
-  const skillPath = join(agentDir, 'skills/agentcfg/SKILL.md');
+  const skillPath = join(agentDir, 'skills/agents-cfgit/SKILL.md');
   // OpenCode 的 SKILL.md 安装路径与其他不同（实际由 install.js 走同逻辑）
   const skillOk = existsSync(skillPath);
   checks.push({
@@ -78,7 +78,7 @@ function checkHookRegistration(agentType, agentDir) {
     if (agentType === 'claude') {
       const settings = JSON.parse(readFileSync(join(agentDir, 'settings.json'), 'utf-8'));
       const hasHook = settings.hooks?.PreToolUse?.some(h =>
-        h.hooks?.some(hk => hk.command?.includes('commit.js') || hk.command?.includes('agentcfg commit'))
+        h.hooks?.some(hk => hk.command?.includes('commit.js') || hk.command?.includes('agents-cfgit commit'))
       );
       return { label, ok: !!hasHook, detail: hasHook ? '已注册' : '未注册' };
     }
@@ -105,7 +105,7 @@ function checkHookRegistration(agentType, agentDir) {
       };
     }
     if (agentType === 'opencode') {
-      const pluginPath = join(agentDir, 'plugins/agentcfg.ts');
+      const pluginPath = join(agentDir, 'plugins/agents-cfgit.ts');
       return {
         label,
         ok: existsSync(pluginPath),
@@ -147,7 +147,7 @@ export function previewUninstall() {
     // 检查 hook 注册情况
     const hookCheck = checkHookRegistration(agent.type, dir);
     if (hookCheck.ok) {
-      dirActions.push(`从 ${agent.type} 配置中移除 agentcfg hook`);
+      dirActions.push(`从 ${agent.type} 配置中移除 agents-cfgit hook`);
     }
 
     // 检查 enabledPlugins（仅 claude）
@@ -158,7 +158,7 @@ export function previewUninstall() {
           const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
           if (settings.enabledPlugins && Object.keys(settings.enabledPlugins).length > 0) {
             const matched = Object.keys(settings.enabledPlugins).filter(k =>
-              k.toLowerCase().includes('agentcfg')
+              k.toLowerCase().includes('agents-cfgit')
             );
             if (matched.length > 0) {
               dirActions.push(`从 enabledPlugins 移除: ${matched.join(', ')}`);
@@ -170,22 +170,22 @@ export function previewUninstall() {
 
     // Codex 还原 config.toml hooks 值
     if (agent.type === 'codex') {
-      const metaPath = join(dir, 'config.toml.agentcfg-meta');
+      const metaPath = join(dir, 'config.toml.agents-cfgit-meta');
       if (existsSync(metaPath)) {
         try {
           const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
           if (meta.originalHooksValue === null) {
-            dirActions.push('从 config.toml 移除 agentcfg 添加的 [features] 段');
+            dirActions.push('从 config.toml 移除 agents-cfgit 添加的 [features] 段');
           } else {
             dirActions.push(`还原 config.toml codex_hooks = ${meta.originalHooksValue}`);
           }
-          dirActions.push('删除元数据文件 config.toml.agentcfg-meta');
+          dirActions.push('删除元数据文件 config.toml.agents-cfgit-meta');
         } catch { /* */ }
       }
     }
 
     // SKILL.md
-    const skillPath = join(dir, 'skills/agentcfg/SKILL.md');
+    const skillPath = join(dir, 'skills/agents-cfgit/SKILL.md');
     if (existsSync(skillPath)) {
       dirActions.push(`删除 ${skillPath}`);
     }
@@ -193,9 +193,9 @@ export function previewUninstall() {
     // 备份文件保留
     const backupFiles = [];
     const candidates = [
-      'settings.json.bak.agentcfg',
-      'hooks.json.bak.agentcfg',
-      'config.toml.bak.agentcfg',
+      'settings.json.bak.agents-cfgit',
+      'hooks.json.bak.agents-cfgit',
+      'config.toml.bak.agents-cfgit',
     ];
     for (const name of candidates) {
       if (existsSync(join(dir, name))) backupFiles.push(name);
@@ -211,7 +211,7 @@ export function previewUninstall() {
 
     // OpenCode plugin
     if (agent.type === 'opencode') {
-      const pluginPath = join(dir, 'plugins/agentcfg.ts');
+      const pluginPath = join(dir, 'plugins/agents-cfgit.ts');
       if (existsSync(pluginPath)) {
         dirActions.push(`删除 OpenCode 插件文件 ${pluginPath}`);
       }

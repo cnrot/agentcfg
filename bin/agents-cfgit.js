@@ -5,8 +5,8 @@ const [,, command, ...args] = process.argv;
 const commands = {
   init: async () => {
     if (args.includes('--help') || args.includes('-h')) {
-      console.log('用法: agentcfg init');
-      console.log('  安装 agentcfg 到当前 AI 工具环境');
+      console.log('用法: agents-cfgit init');
+      console.log('  安装 agents-cfgit 到当前 AI 工具环境');
       return;
     }
     const { default: install } = await import('../src/install.js');
@@ -14,8 +14,8 @@ const commands = {
   },
   uninstall: async () => {
     if (args.includes('--help') || args.includes('-h')) {
-      console.log('用法: agentcfg uninstall');
-      console.log('  卸载 agentcfg，清理 hooks、SKILL.md、备份文件');
+      console.log('用法: agents-cfgit uninstall');
+      console.log('  卸载 agents-cfgit，清理 hooks、SKILL.md、备份文件');
       return;
     }
     const { default: uninstall } = await import('../src/uninstall.js');
@@ -23,7 +23,7 @@ const commands = {
   },
   recover: async () => {
     if (args.includes('--help') || args.includes('-h')) {
-      console.log('用法: agentcfg recover [<file>] [<commit-hash>]');
+      console.log('用法: agents-cfgit recover [<file>] [<commit-hash>]');
       console.log('  无参数          显示恢复指引与最近 15 条历史');
       console.log('  <file>          查看指定文件的修改历史（最近 15 条）');
       console.log('  <file> <hash>   生成三段式比对报告');
@@ -34,7 +34,7 @@ const commands = {
   },
   squash: async () => {
     if (args.includes('--help') || args.includes('-h')) {
-      console.log('用法: agentcfg squash [--days N] [--force]');
+      console.log('用法: agents-cfgit squash [--days N] [--force]');
       console.log('  --days N   压缩 N 天前的 commit（默认 90）');
       console.log('  --force    自动暂存未提交变更，完成后恢复');
       return;
@@ -57,12 +57,12 @@ const commands = {
     }
     if (invalidArgs) {
       console.log('❌ 参数错误: --days 需要一个正整数');
-      console.log('   用法: agentcfg squash [--days N] [--force]');
+      console.log('   用法: agents-cfgit squash [--days N] [--force]');
       return;
     }
     const agents = detectAgents();
     if (agents.length === 0) {
-      console.log('❌ 未检测到支持的 AI 工具，请先执行 agentcfg init');
+      console.log('❌ 未检测到支持的 AI 工具，请先执行 agents-cfgit init');
       return;
     }
     for (const agent of agents) {
@@ -71,7 +71,7 @@ const commands = {
         if (force) {
           const s = execFileSync('git', ['status', '--porcelain'], { cwd: agent.dir, encoding: 'utf-8' }).trim();
           if (s) {
-            execFileSync('git', ['stash', 'push', '--include-untracked', '-m', 'agentcfg-auto-stash'], { cwd: agent.dir });
+            execFileSync('git', ['stash', 'push', '--include-untracked', '-m', 'agents-cfgit-auto-stash'], { cwd: agent.dir });
             stashed = true;
           }
         }
@@ -87,7 +87,7 @@ const commands = {
     const isUninstallDryRun = args.includes('--uninstall');
 
     if (args.includes('--help') || args.includes('-h')) {
-      console.log('用法: agentcfg verify [--uninstall]');
+      console.log('用法: agents-cfgit verify [--uninstall]');
       console.log('  --uninstall  预览卸载影响（dry-run）');
       return;
     }
@@ -102,21 +102,21 @@ const commands = {
       for (const a of actions) {
         console.log(`${a.agent.type} (${a.agent.dir}):`);
         if (a.dirActions.length === 0) {
-          console.log('  (无操作 — 该 agent 未安装 agentcfg)');
+          console.log('  (无操作 — 该 agent 未安装 agents-cfgit)');
         } else {
           for (const act of a.dirActions) {
             console.log(`  • ${act}`);
           }
         }
       }
-      console.log('\n💡 确认无误后运行 `agentcfg uninstall` 实际执行');
+      console.log('\n💡 确认无误后运行 `agents-cfgit uninstall` 实际执行');
       console.log('⚠️  Claude Code/Cursor 用户需重启 AI 工具会话使卸载生效');
       return;
     }
 
     const { results, allOk } = verifyAll();
     if (results.length === 0) {
-      console.log('❌ 未检测到支持的 AI 工具，请先执行 agentcfg init');
+      console.log('❌ 未检测到支持的 AI 工具，请先执行 agents-cfgit init');
       process.exit(1);
     }
     let failCount = 0;
@@ -138,7 +138,7 @@ const commands = {
   },
   log: async () => {
     if (args.includes('--help') || args.includes('-h')) {
-      console.log('用法: agentcfg log [<file>] [--count N] [--since <date>]');
+      console.log('用法: agents-cfgit log [<file>] [--count N] [--since <date>]');
       console.log('  <file>        查看指定文件的历史');
       console.log('  --count N     显示 N 条记录（默认 10）');
       console.log('  --since <date> 从指定日期开始（格式: YYYY-MM-DD）');
@@ -184,7 +184,7 @@ const commands = {
     const { generateDiffReport } = await import('../src/core/diff.js');
     const { detectAgents } = await import('../src/install.js');
     if (args.includes('--help') || args.includes('-h') || args.length < 2) {
-      console.log('用法: agentcfg diff <file> <commit-hash>');
+      console.log('用法: agents-cfgit diff <file> <commit-hash>');
       console.log('  生成指定文件在某 commit 与当前版本的三段式比对报告');
       return;
     }
@@ -198,7 +198,7 @@ const commands = {
   },
   status: async () => {
     if (args.includes('--help') || args.includes('-h')) {
-      console.log('用法: agentcfg status');
+      console.log('用法: agents-cfgit status');
       console.log('  显示各 agent 工作区状态，包括未追踪和已修改文件');
       return;
     }
@@ -231,7 +231,7 @@ const commands = {
   },
   ui: async () => {
     if (args.includes('--help') || args.includes('-h')) {
-      console.log('用法: agentcfg ui [--port N] [--host H] [--open]');
+      console.log('用法: agents-cfgit ui [--port N] [--host H] [--open]');
       console.log('  --port N     监听端口（默认 3000）');
       console.log('  --host H     监听地址（默认 127.0.0.1；局域网访问用 0.0.0.0）');
       console.log('  --open       启动后自动调用系统默认浏览器');
@@ -246,7 +246,7 @@ if (command === '--help' || command === '-h' || !command) {
   printHelp();
 } else if (commands[command]) {
   commands[command]().catch(err => {
-    console.error('agentcfg 错误:', err.message);
+    console.error('agents-cfgit 错误:', err.message);
     process.exit(1);
   });
 } else {
@@ -255,11 +255,11 @@ if (command === '--help' || command === '-h' || !command) {
 }
 
 function printHelp() {
-  console.log('用法: agentcfg <命令> [选项]');
+  console.log('用法: agents-cfgit <命令> [选项]');
   console.log('');
   console.log('命令:');
-  console.log('  init                      安装 agentcfg 到当前 AI 工具环境');
-  console.log('  uninstall                 卸载 agentcfg');
+  console.log('  init                      安装 agents-cfgit 到当前 AI 工具环境');
+  console.log('  uninstall                 卸载 agents-cfgit');
   console.log('  recover [<file>] [<hash>] 查看历史或恢复配置（对话式引导）');
   console.log('  squash [--days N] [--force]  压缩 N 天前的历史（默认 90 天）');
   console.log('  verify [--uninstall]      一键验证；加 --uninstall 预览卸载');
@@ -269,11 +269,11 @@ function printHelp() {
   console.log('  ui [--port N] [--host H] [--open]  启动 WebUI 仪表板（默认 127.0.0.1:3000）');
   console.log('');
   console.log('示例:');
-  console.log('  agentcfg verify --uninstall   预览卸载影响');
-  console.log('  agentcfg squash --days 30     压缩 30 天前的 commit');
-  console.log('  agentcfg squash --days 30 --force  强制压缩（自动暂存变更）');
-  console.log('  agentcfg log --count 20       显示最近 20 条记录');
-  console.log('  agentcfg log --since 2026-01-01  从 2026 年开始显示');
-  console.log('  agentcfg diff CLAUDE.md a1b2c3d  比对文件历史版本');
-  console.log('  agentcfg ui                     启动本地 WebUI 仪表板');
+  console.log('  agents-cfgit verify --uninstall   预览卸载影响');
+  console.log('  agents-cfgit squash --days 30     压缩 30 天前的 commit');
+  console.log('  agents-cfgit squash --days 30 --force  强制压缩（自动暂存变更）');
+  console.log('  agents-cfgit log --count 20       显示最近 20 条记录');
+  console.log('  agents-cfgit log --since 2026-01-01  从 2026 年开始显示');
+  console.log('  agents-cfgit diff CLAUDE.md a1b2c3d  比对文件历史版本');
+  console.log('  agents-cfgit ui                     启动本地 WebUI 仪表板');
 }

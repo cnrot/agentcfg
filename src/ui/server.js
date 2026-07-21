@@ -21,7 +21,7 @@ const MIME = {
 };
 
 /**
- * 启动 agentcfg WebUI server
+ * 启动 agents-cfgit WebUI server
  * @param {string[]} args
  * @returns {Promise<{port: number, host: string, url: string}>}
  */
@@ -48,7 +48,7 @@ export default {
 
     const url = `http://${opts.host === '0.0.0.0' ? '127.0.0.1' : opts.host}:${opts.port}`;
     console.log('');
-    console.log(`  ✅ agentcfg WebUI 已启动`);
+    console.log(`  ✅ agents-cfgit WebUI 已启动`);
     console.log(`     ${url}`);
     console.log(`     数据源: ${cwd}`);
     console.log(`     Ctrl+C 关闭`);
@@ -90,7 +90,7 @@ function parseArgs(args) {
 }
 
 function printHelp() {
-  console.log('用法: agentcfg ui [--port N] [--host H] [--open]');
+  console.log('用法: agents-cfgit ui [--port N] [--host H] [--open]');
   console.log('  --port N     监听端口（默认 3000）');
   console.log('  --host H     监听地址（默认 127.0.0.1；局域网访问用 0.0.0.0）');
   console.log('  --open       启动后自动调用系统默认浏览器');
@@ -136,7 +136,7 @@ function sendJson(res, status, obj) {
 
 function requireGitRepo(cwd, res) {
   if (!existsSync(join(cwd, '.git'))) {
-    sendJson(res, 503, { error: 'NOT_A_GIT_REPO', message: '当前目录不是 agentcfg 管理的 git 仓库,请先执行 `agentcfg init`' });
+    sendJson(res, 503, { error: 'NOT_A_GIT_REPO', message: '当前目录不是 agents-cfgit 管理的 git 仓库,请先执行 `agents-cfgit init`' });
     return false;
   }
   return true;

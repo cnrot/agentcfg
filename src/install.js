@@ -90,7 +90,7 @@ export default async function install() {
     }
 
     // Step 3: 安装 SKILL.md（按 agent 类型替换路径占位符）
-    const skillDir = join(agent.dir, 'skills/agentcfg');
+    const skillDir = join(agent.dir, 'skills/agents-cfgit');
     const skillPath = join(skillDir, 'SKILL.md');
     if (!existsSync(skillPath)) {
       mkdirSync(skillDir, { recursive: true });
@@ -105,6 +105,6 @@ export default async function install() {
     }
   }
 
-  console.log('\n✅ agentcfg 安装完成！');
+  console.log('\n✅ agents-cfgit 安装完成！');
   console.log('   AI agent 下次对话时将自动读取 SKILL.md 获取操作指引。');
 }

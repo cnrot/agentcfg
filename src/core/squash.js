@@ -64,8 +64,8 @@ export function squashOldHistory({ cwd, daysThreshold = 90 }) {
       // 创建 archive commit
       const archiveDate = new Date().toISOString();
       execFileSync('git', [
-        '-c', 'user.name=agentcfg',
-        '-c', 'user.email=agentcfg@local',
+        '-c', 'user.name=agents-cfgit',
+        '-c', 'user.email=agents-cfgit@local',
         'commit', '--no-verify', '--no-gpg-sign', '-m',
         `archive: 自动压缩于 ${cutoffStr}（合并 ${oldCommits.length} 个 commit）`],
       { cwd, encoding: 'utf-8', env: { ...process.env, GIT_COMMITTER_DATE: archiveDate, GIT_AUTHOR_DATE: archiveDate } });
@@ -101,8 +101,8 @@ export function squashOldHistory({ cwd, daysThreshold = 90 }) {
 
       const squashDate = new Date().toISOString();
       execFileSync('git', [
-        '-c', 'user.name=agentcfg',
-        '-c', 'user.email=agentcfg@local',
+        '-c', 'user.name=agents-cfgit',
+        '-c', 'user.email=agents-cfgit@local',
         'commit', '--no-verify', '--no-gpg-sign', '-m',
         `archive: 自动压缩于 ${cutoffStr}（合并 ${oldCommits.length} 个 commit）`],
       { cwd, encoding: 'utf-8', env: { ...process.env, GIT_COMMITTER_DATE: squashDate, GIT_AUTHOR_DATE: squashDate } });

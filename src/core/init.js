@@ -29,8 +29,8 @@ export function initGit(cwd) {
     // 设置本地 git user 配置，避免无全局配置时 commit 失败
     const gitDate = new Date().toISOString();
     execFileSync('git', [
-      '-c', 'user.name=agentcfg',
-      '-c', 'user.email=agentcfg@local',
+      '-c', 'user.name=agents-cfgit',
+      '-c', 'user.email=agents-cfgit@local',
       'commit', '--no-verify', '--no-gpg-sign', '-m', 'init: 初始配置快照'], {
       cwd,
       env: { ...process.env, GIT_COMMITTER_DATE: gitDate, GIT_AUTHOR_DATE: gitDate },
